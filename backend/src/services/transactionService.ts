@@ -64,6 +64,7 @@ export class TransactionService {
                 t.amount,
                 t.description,
                 t.merchant,
+                t.account_info        AS cardholderName,
                 t.category_id         AS categoryId,
                 c.name                AS categoryName,
                 t.category_confidence AS categoryConfidence,
@@ -127,14 +128,14 @@ export class TransactionService {
             SELECT
                 t.category_id  AS categoryId,
                 c.name         AS categoryName,
-                SUM(ABS(t.amount)) AS total,
+                ABS(SUM(t.amount)) AS total,
                 COUNT(*)           AS transactionCount
             FROM transactions t
             JOIN categories c ON c.id = t.category_id
             WHERE t.transaction_date LIKE ?
-              AND t.amount < 0
               AND t.category_id IS NOT NULL
             GROUP BY t.category_id
+            HAVING SUM(t.amount) < 0
             ORDER BY total DESC
         `).all(monthPattern) as Array<{ categoryId: number; categoryName: string; total: number; transactionCount: number }>;
 
@@ -163,6 +164,7 @@ export class TransactionService {
             amount: number;
             description: string;
             merchant?: string;
+            cardholderName?: string;
             categoryId?: number;
             categoryConfidence?: number;
         }>,
@@ -170,8 +172,8 @@ export class TransactionService {
         const db = getDb();
         const insert = db.prepare(`
             INSERT INTO transactions
-                (upload_id, transaction_date, amount, description, merchant, category_id, category_confidence)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                (upload_id, transaction_date, amount, description, merchant, account_info, category_id, category_confidence)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const insertMany = db.transaction((rows: typeof transactions) => {
             for (const row of rows) {
@@ -181,6 +183,7 @@ export class TransactionService {
                     row.amount,
                     row.description,
                     row.merchant ?? null,
+                    row.cardholderName ?? null,
                     row.categoryId ?? null,
                     row.categoryConfidence ?? null,
                 );

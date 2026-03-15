@@ -12,7 +12,7 @@ const KEYWORD_RULES: Array<{ pattern: RegExp; categoryName: string }> = [
     { pattern: /ntuc|fairprice|cold.?storage|giant|sheng.?siong|mcdonalds|kfc|starbucks|kopitiam|hawker/i, categoryName: 'Food & Dining' },
     { pattern: /netflix|spotify|disney|youtube|cinema|golden.?village/i, categoryName: 'Entertainment' },
     { pattern: /sp.?services|sp.?digital|singtel|starhub|m1|electricity|telco|broadband/i, categoryName: 'Utilities' },
-    { pattern: /shopee|lazada|amazon|uniqlo|zara|guardian|watsons/i, categoryName: 'Shopping' },
+    { pattern: /shopee|lazada|uniqlo|zara|guardian|watsons/i, categoryName: 'Shopping' },
     { pattern: /clinic|pharmacy|hospital|dental/i, categoryName: 'Health' },
     { pattern: /singapore.?airlines|scoot|jetstar|airbnb|hotel|booking\.com/i, categoryName: 'Travel' },
     { pattern: /cashback|rebate|refund|reimburs/i, categoryName: 'Income' },
@@ -24,12 +24,15 @@ const HSBC_KEYWORD_SEEDS: Array<{ pattern: RegExp; categoryName: string }> = [
     { pattern: /^BUS\/MRT/i, categoryName: 'Transport' },
     { pattern: /^PARKING\.SG/i, categoryName: 'Transport' },
     { pattern: /^MCDONALD/i, categoryName: 'Food & Dining' },
+    { pattern: /^PRATUNAM/i, categoryName: 'Food & Dining' },
     { pattern: /^GRAB/i, categoryName: 'Transport' },
     { pattern: /^SHEIN/i, categoryName: 'Shopping' },
     { pattern: /^NETFLIX/i, categoryName: 'Entertainment' },
     { pattern: /^SPOTIFY/i, categoryName: 'Entertainment' },
-    { pattern: /^AMAZON/i, categoryName: 'Shopping' },
     { pattern: /^NTUC/i, categoryName: 'Groceries' },
+    { pattern: /^UrbanCompany/i, categoryName: 'Utilities' },
+    { pattern: /^GOMO/i, categoryName: 'Utilities' },
+    { pattern: /^SIMBA/i, categoryName: 'Utilities' },
 ];
 
 const UOB_KEYWORD_SEEDS: Array<{ pattern: RegExp; categoryName: string }> = [
@@ -196,6 +199,15 @@ export class AiService {
             // Store OpenAI text-embedding-3-small vectors in transaction_embeddings table.
             // For new transactions: embed description → find K nearest neighbours
             // → assign same category as majority of neighbours.
+        }
+
+        // ── Fallback: assign "Other" to anything still uncategorised ──────────
+        const otherId = resolveCategoryId('Other', categories);
+        for (const result of results) {
+            if (result.categoryId === undefined) {
+                result.categoryId = otherId;
+                result.categoryConfidence = 0.5;
+            }
         }
 
         return results;

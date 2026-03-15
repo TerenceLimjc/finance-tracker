@@ -47,8 +47,9 @@ describe('AiService', () => {
 
     beforeEach(() => {
         svc = new AiService();
-        // Remove any leaked API key so Tier 2 (OpenAI) is not invoked
+        // Remove any leaked AI keys so Tier 2 is not invoked during unit tests
         delete process.env.OPENAI_API_KEY;
+        delete process.env.LOCAL_LLM_URL;
     });
 
     // ── Tier 1: keyword / rule matching ───────────────────────────────────────
@@ -97,8 +98,9 @@ describe('AiService', () => {
     // ── OpenAI behaviour ──────────────────────────────────────────────────────
 
     describe('OpenAI integration', () => {
-        it('5. no OPENAI_API_KEY → returns Tier-1 results only, no errors thrown', async () => {
+        it('5. no OPENAI_API_KEY and no LOCAL_LLM_URL → returns Tier-1 results only, no errors thrown', async () => {
             delete process.env.OPENAI_API_KEY;
+            delete process.env.LOCAL_LLM_URL;
             const txs = [
                 makeTx({ description: 'UNKNOWN VENDOR A' }),
                 makeTx({ description: 'UNKNOWN VENDOR B' }),

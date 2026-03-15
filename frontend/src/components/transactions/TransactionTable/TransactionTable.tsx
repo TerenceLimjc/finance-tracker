@@ -55,6 +55,14 @@ export function TransactionTable() {
             ),
         },
         {
+            title: 'Spender',
+            dataIndex: 'cardholderName',
+            key: 'cardholderName',
+            width: 130,
+            ellipsis: true,
+            render: (val: string | null) => <Text type="secondary">{val ?? '—'}</Text>,
+        },
+        {
             title: 'Date',
             dataIndex: 'transactionDate',
             key: 'transactionDate',

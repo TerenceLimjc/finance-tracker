@@ -20,9 +20,12 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 }
 
 function slicePath(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
-    const start = polarToCartesian(cx, cy, r, endAngle);
+    // A full 360° arc is degenerate (start === end point) — SVG won't draw it.
+    // Cap to 359.9999° so the arc always has distinct endpoints.
+    const clampedEnd = endAngle - startAngle >= 360 ? startAngle + 359.9999 : endAngle;
+    const start = polarToCartesian(cx, cy, r, clampedEnd);
     const end = polarToCartesian(cx, cy, r, startAngle);
-    const large = endAngle - startAngle > 180 ? 1 : 0;
+    const large = clampedEnd - startAngle > 180 ? 1 : 0;
     return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${large} 0 ${end.x} ${end.y} Z`;
 }
 
@@ -95,7 +98,7 @@ export function CategoryPieChart({ data, isLoading = false }: Props) {
                                     fill={color}
                                     opacity={isFiltered ? 0.25 : 1}
                                     stroke="#fff"
-                                    strokeWidth={2}
+                                    strokeWidth={slices.length === 1 ? 0 : 2}
                                     style={{
                                         transformOrigin: `${cx}px ${cy}px`,
                                         transform: `scale(${scale})`,

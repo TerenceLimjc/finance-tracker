@@ -42,12 +42,15 @@ export const theme: ThemeConfig = {
 
 /** Category colour palette — consistent across pie chart slices and table Cat cells */
 export const CATEGORY_COLORS: Record<string, string> = {
-    'Food/Dining': '#ff7875',
+    'Food & Dining': '#ff7875',
+    Groceries: '#ff9c6e',
     Transport: '#69b1ff',
     Shopping: '#ffd666',
+    Utilities: '#b37feb',
     Bills: '#b37feb',
     Entertainment: '#5cdbd3',
-    Health: '#ff9c6e',
+    Health: '#f759ab',
     Travel: '#85a5ff',
+    Income: '#95de64',
     Other: '#d9d9d9',
 };

@@ -7,6 +7,7 @@ export interface ParsedTransaction {
     amount: number;          // negative = expense, positive = income/credit
     description: string;
     merchant?: string;
+    cardholderName?: string; // per-section cardholder (e.g. supplementary card holders)
 }
 
 export interface BaseProcessor {

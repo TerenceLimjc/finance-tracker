@@ -95,6 +95,8 @@ const HSBC_SKIP_PATTERNS = [
 // Trailing garbage text from right-column interleave is ignored via (?:\s.*)? at end.
 const HSBC_TX_LINE = /^(\d{2}\s*[A-Za-z]{3})\s{1,3}(\d{2}\s*[A-Za-z]{3})\s+(.*?)\s+([\d,]+\.\d{1,2})\s*(CR)?(?:\s.*)?$/i;
 const HSBC_CONTINUATION_PATTERN = /^\s{2,}[A-Z\s]+\s{2,}[A-Z]{2}\s*$/;
+// Cardholder section header: e.g. "Terence Lim 4363-X00-XXXX-1441" or "You Yin 4363-X00(X-XXXX-1458"
+const HSBC_CARDHOLDER_SECTION = /^([A-Za-z][\w\s]+?)\s+\d{4}[-\s][\dXx()]{2,}[-\s][\dXx()]+[-\s]\d{4}\s*$/
 
 interface ParseResult {
     transactions: ParsedTransaction[];
@@ -133,6 +135,7 @@ function parseHSBC(text: string): ParseResult {
     const start = periodStart ?? new Date(2000, 0, 1);
     const end = periodEnd ?? new Date(2099, 11, 31);
     const transactions: ParsedTransaction[] = [];
+    let currentCardholder: string | null = null;
 
     for (const line of text.split('\n')) {
         try {
@@ -140,6 +143,13 @@ function parseHSBC(text: string): ParseResult {
             if (!trimmed) continue;
             if (HSBC_SKIP_PATTERNS.some((p) => p.test(trimmed))) continue;
             if (HSBC_CONTINUATION_PATTERN.test(line)) continue;
+
+            // Detect per-cardholder section headers (e.g. supplementary card holders)
+            const sectionMatch = trimmed.match(HSBC_CARDHOLDER_SECTION);
+            if (sectionMatch) {
+                currentCardholder = sectionMatch[1].trim();
+                continue;
+            }
 
             const match = trimmed.match(HSBC_TX_LINE);
             if (!match) continue;
@@ -152,6 +162,7 @@ function parseHSBC(text: string): ParseResult {
                 transactionDate: dateToYYYYMMDD(resolved),
                 description: description.trim(),
                 amount: parseHSBCAmount(amountRaw, !!crFlag),
+                ...(currentCardholder ? { cardholderName: currentCardholder } : {}),
             });
         } catch {
             // skip malformed line

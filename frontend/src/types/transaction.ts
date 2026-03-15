@@ -18,6 +18,7 @@ export interface Transaction {
     amount: number;          // negative = expense, positive = income/credit
     description: string;
     merchant: string | null;
+    cardholderName: string | null;
     categoryId: number | null;
     categoryName: string | null;
     categoryConfidence: number | null;
