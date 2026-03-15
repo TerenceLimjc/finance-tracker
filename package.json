@@ -26,5 +26,8 @@
     "workerDirectory": [
       "frontend/public"
     ]
+  },
+  "dependencies": {
+    "pdfjs-dist": "^3.11.174"
   }
 }

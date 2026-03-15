@@ -14,15 +14,6 @@
   "files.associations": {
     "*.css": "css"
   },
-  // Exclude runtime directories from the file explorer
-  "files.exclude": {
-    "**/node_modules": true,
-    "database/**": true,
-    "uploads/**": true,
-    "logs/**": true,
-    "frontend/dist/**": true,
-    "backend/dist/**": true
-  },
   // ESLint watches both workspaces
   "eslint.workingDirectories": [
     "frontend",

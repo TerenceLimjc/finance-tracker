@@ -1,5 +1,5 @@
 import fs from 'fs';
-import pdfParse from 'pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { BaseProcessor, ParsedTransaction } from './baseProcessor';
 
 export interface PdfMeta {
@@ -25,7 +25,8 @@ function parseDateWithYear(str: string): Date | null {
 }
 
 function parseDDMon(ddMon: string, year: number): Date | null {
-    const m = ddMon.trim().match(/^(\d{2})\s+([A-Za-z]{3})$/);
+    // Accept both "08 Dec" (with space) and "08Dec" (no space — common from OCR)
+    const m = ddMon.trim().match(/^(\d{2})\s*([A-Za-z]{3})$/);
     if (!m) return null;
     const month = MONTHS[m[2].toLowerCase()];
     if (month === undefined) return null;
@@ -54,8 +55,11 @@ function resolveDDMonDate(ddMon: string, periodStart: Date, periodEnd: Date): Da
 // ─── Amount utilities ─────────────────────────────────────────────────────────
 
 function parseHSBCAmount(raw: string, isCR: boolean): number {
-    const abs = parseFloat(raw.replace(/,/g, ''));
-    return isCR ? +abs : -abs;
+    // Belt-and-suspenders: also detect CR embedded in the amount string itself
+    // (can happen when OCR spacing causes the regex to miss the separate CR group)
+    const hasCR = isCR || /CR\s*$/i.test(raw.trim());
+    const abs = parseFloat(raw.replace(/[,\sCR]/gi, ''));
+    return hasCR ? +abs : -abs;
 }
 
 function parseUOBAmount(raw: string): number {
@@ -86,7 +90,10 @@ const HSBC_SKIP_PATTERNS = [
     /^\s*Page\s+\d+/i,
 ];
 
-const HSBC_TX_LINE = /^(\d{2}\s+[A-Za-z]{3})\s{2,}(\d{2}\s+[A-Za-z]{3})\s{2,}(.+?)\s{2,}([\d,]+\.\d{2})(CR)?$/;
+// Handles both "DD Mon" (with space) and "DDMon" (OCR artefact, no space) dates.
+// `\s*` before CR handles both "52.00CR" and "52.00 CR" OCR variants.
+// Trailing garbage text from right-column interleave is ignored via (?:\s.*)? at end.
+const HSBC_TX_LINE = /^(\d{2}\s*[A-Za-z]{3})\s{1,3}(\d{2}\s*[A-Za-z]{3})\s+(.*?)\s+([\d,]+\.\d{1,2})\s*(CR)?(?:\s.*)?$/i;
 const HSBC_CONTINUATION_PATTERN = /^\s{2,}[A-Z\s]+\s{2,}[A-Z]{2}\s*$/;
 
 interface ParseResult {
@@ -316,10 +323,100 @@ function parseGeneric(text: string): ParseResult {
 
 // ─── PdfProcessor ─────────────────────────────────────────────────────────────
 
+async function extractTextWithPdfjs(buffer: Buffer): Promise<string> {
+    const uint8 = new Uint8Array(buffer);
+    const doc = await (pdfjsLib as any).getDocument({
+        data: uint8,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true,
+    }).promise;
+
+    let text = '';
+    for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        // Preserve spatial layout: items on the same Y position are on the same line
+        const items = content.items as Array<{ str: string; transform: number[] }>;
+        // Group by rounded Y coordinate to reconstruct lines
+        const lineMap = new Map<number, Array<{ x: number; str: string }>>();
+        for (const item of items) {
+            if (!item.str.trim()) continue;
+            const y = Math.round(item.transform[5]);
+            const x = Math.round(item.transform[4]);
+            if (!lineMap.has(y)) lineMap.set(y, []);
+            lineMap.get(y)!.push({ x, str: item.str });
+        }
+        // Sort by Y descending (PDF Y goes bottom-up), then X ascending within line
+        const sortedYs = [...lineMap.keys()].sort((a, b) => b - a);
+        for (const y of sortedYs) {
+            const entries = lineMap.get(y)!.sort((a, b) => a.x - b.x);
+            text += entries.map((e) => e.str).join('  ') + '\n';
+        }
+    }
+    return text;
+}
+
+// OCR fallback: render each PDF page to PNG via pdfjs-dist + canvas, then run tesseract.js
+async function extractTextWithOCR(buffer: Buffer): Promise<string> {
+    // Dynamic imports so startup doesn't fail if packages are somehow missing
+    const { createCanvas } = await import('@napi-rs/canvas');
+    const { createWorker } = await import('tesseract.js');
+
+    // NodeCanvasFactory lets pdfjs-dist create canvases in Node.js
+    const nodeCanvasFactory = {
+        create(width: number, height: number) {
+            const canvas = createCanvas(width, height);
+            return { canvas, context: canvas.getContext('2d') };
+        },
+        reset(cc: { canvas: any }, width: number, height: number) {
+            cc.canvas.width = width;
+            cc.canvas.height = height;
+        },
+        destroy(cc: { canvas: any }) {
+            cc.canvas.width = 0;
+            cc.canvas.height = 0;
+        },
+    };
+
+    const uint8 = new Uint8Array(buffer);
+    const doc = await (pdfjsLib as any).getDocument({
+        data: uint8,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true,
+        canvasFactory: nodeCanvasFactory,
+    }).promise;
+
+    // tesseract.js v7: createWorker(lang) — downloads the eng.traineddata model on first use
+    const worker = await createWorker('eng');
+    let allText = '';
+
+    try {
+        for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
+            const page = await doc.getPage(pageNum);
+            // Scale 2.0 greatly improves OCR accuracy on typical A4-sized statements
+            const viewport = page.getViewport({ scale: 2.0 });
+            const cc = nodeCanvasFactory.create(viewport.width, viewport.height);
+            await page.render({ canvasContext: cc.context, viewport }).promise;
+            const pngBuffer = (cc.canvas as any).toBuffer('image/png');
+            const { data: { text } } = await worker.recognize(pngBuffer);
+            allText += text + '\n';
+            nodeCanvasFactory.destroy(cc);
+        }
+    } finally {
+        await worker.terminate();
+    }
+
+    console.log(`[PdfProcessor] OCR extracted ${allText.split('\n').filter((l) => l.trim()).length} lines from ${doc.numPages} pages`);
+    return allText;
+}
+
 /**
  * PdfProcessor
  *
- * Uses pdf-parse to extract transaction rows from bank-statement PDFs.
+ * Uses pdfjs-dist to extract transaction rows from bank-statement PDFs.
+ * Falls back to OCR (tesseract.js) when the text layer is empty.
  * Supports HSBC Visa Advance, UOB One Card, and a generic fallback.
  * After parse(), this.lastMeta contains bankInfo, cardholderName, and date range.
  */
@@ -329,8 +426,22 @@ export class PdfProcessor implements BaseProcessor {
 
     async parse(filePath: string): Promise<ParsedTransaction[]> {
         const buffer = await fs.promises.readFile(filePath);
-        const data = await pdfParse(buffer);
-        const text = data.text;
+
+        // Tier 1: pdfjs-dist text extraction
+        let text = await extractTextWithPdfjs(buffer);
+
+        // Tier 2: OCR fallback if text layer is empty/minimal
+        const meaningfulLines = text.split('\n').filter((l) => l.trim().length > 3);
+        if (meaningfulLines.length < 5) {
+            console.warn(`[PdfProcessor] pdfjs-dist extracted only ${meaningfulLines.length} meaningful lines, trying OCR fallback`);
+            text = await extractTextWithOCR(buffer);
+        }
+
+        if (!text.trim()) {
+            console.error('[PdfProcessor] Could not extract any text from PDF');
+            this.lastMeta = { bankInfo: null, cardholderName: null, dateRangeStart: null, dateRangeEnd: null };
+            return [];
+        }
 
         const format = detectBankFormat(text);
         let result: ParseResult;

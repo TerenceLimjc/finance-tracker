@@ -8,39 +8,39 @@ export interface CategorisedTransaction extends ParsedTransaction {
 // ─── Tier 1: Keyword / Rule Matching ─────────────────────────────────────────
 
 const KEYWORD_RULES: Array<{ pattern: RegExp; categoryName: string }> = [
-    { pattern: /grab|gojek|taxi|mrt|bus|ez.?link|parking/i,                                      categoryName: 'Transport' },
+    { pattern: /grab|gojek|taxi|mrt|bus|ez.?link|parking/i, categoryName: 'Transport' },
     { pattern: /ntuc|fairprice|cold.?storage|giant|sheng.?siong|mcdonalds|kfc|starbucks|kopitiam|hawker/i, categoryName: 'Food & Dining' },
-    { pattern: /netflix|spotify|disney|youtube|cinema|golden.?village/i,                          categoryName: 'Entertainment' },
-    { pattern: /sp.?services|sp.?digital|singtel|starhub|m1|electricity|telco|broadband/i,        categoryName: 'Utilities' },
-    { pattern: /shopee|lazada|amazon|uniqlo|zara|guardian|watsons/i,                              categoryName: 'Shopping' },
-    { pattern: /clinic|pharmacy|hospital|dental/i,                                                categoryName: 'Health' },
-    { pattern: /singapore.?airlines|scoot|jetstar|airbnb|hotel|booking\.com/i,                    categoryName: 'Travel' },
-    { pattern: /cashback|rebate|refund|reimburs/i,                                                categoryName: 'Income' },
+    { pattern: /netflix|spotify|disney|youtube|cinema|golden.?village/i, categoryName: 'Entertainment' },
+    { pattern: /sp.?services|sp.?digital|singtel|starhub|m1|electricity|telco|broadband/i, categoryName: 'Utilities' },
+    { pattern: /shopee|lazada|amazon|uniqlo|zara|guardian|watsons/i, categoryName: 'Shopping' },
+    { pattern: /clinic|pharmacy|hospital|dental/i, categoryName: 'Health' },
+    { pattern: /singapore.?airlines|scoot|jetstar|airbnb|hotel|booking\.com/i, categoryName: 'Travel' },
+    { pattern: /cashback|rebate|refund|reimburs/i, categoryName: 'Income' },
 ];
 
 // Bank-specific seeds — exact-brand patterns (anchored at start → higher confidence)
 const HSBC_KEYWORD_SEEDS: Array<{ pattern: RegExp; categoryName: string }> = [
-    { pattern: /^FAIRPRICE/i,          categoryName: 'Groceries' },
-    { pattern: /^BUS\/MRT/i,           categoryName: 'Transport' },
-    { pattern: /^PARKING\.SG/i,        categoryName: 'Transport' },
-    { pattern: /^MCDONALD/i,           categoryName: 'Food & Dining' },
-    { pattern: /^GRAB/i,               categoryName: 'Transport' },
-    { pattern: /^SHEIN/i,              categoryName: 'Shopping' },
-    { pattern: /^NETFLIX/i,            categoryName: 'Entertainment' },
-    { pattern: /^SPOTIFY/i,            categoryName: 'Entertainment' },
-    { pattern: /^AMAZON/i,             categoryName: 'Shopping' },
-    { pattern: /^NTUC/i,               categoryName: 'Groceries' },
+    { pattern: /^FAIRPRICE/i, categoryName: 'Groceries' },
+    { pattern: /^BUS\/MRT/i, categoryName: 'Transport' },
+    { pattern: /^PARKING\.SG/i, categoryName: 'Transport' },
+    { pattern: /^MCDONALD/i, categoryName: 'Food & Dining' },
+    { pattern: /^GRAB/i, categoryName: 'Transport' },
+    { pattern: /^SHEIN/i, categoryName: 'Shopping' },
+    { pattern: /^NETFLIX/i, categoryName: 'Entertainment' },
+    { pattern: /^SPOTIFY/i, categoryName: 'Entertainment' },
+    { pattern: /^AMAZON/i, categoryName: 'Shopping' },
+    { pattern: /^NTUC/i, categoryName: 'Groceries' },
 ];
 
 const UOB_KEYWORD_SEEDS: Array<{ pattern: RegExp; categoryName: string }> = [
-    { pattern: /^SHOPEE/i,              categoryName: 'Shopping' },
-    { pattern: /^GRAB\*/i,              categoryName: 'Transport' },
+    { pattern: /^SHOPEE/i, categoryName: 'Shopping' },
+    { pattern: /^GRAB\*/i, categoryName: 'Transport' },
     { pattern: /^Grab\s+Subscription/i, categoryName: 'Entertainment' },
-    { pattern: /^ESSO/i,                categoryName: 'Transport' },
-    { pattern: /^SP\s+Digital/i,        categoryName: 'Utilities' },
-    { pattern: /^UOB\s+ONE\s+CASH/i,    categoryName: 'Income' },
-    { pattern: /^ONE\s+CARD.*REBATE/i,  categoryName: 'Income' },
-    { pattern: /^OTHR/i,                categoryName: 'Other' },
+    { pattern: /^ESSO/i, categoryName: 'Transport' },
+    { pattern: /^SP\s+Digital/i, categoryName: 'Utilities' },
+    { pattern: /^UOB\s+ONE\s+CASH/i, categoryName: 'Income' },
+    { pattern: /^ONE\s+CARD.*REBATE/i, categoryName: 'Income' },
+    { pattern: /^OTHR/i, categoryName: 'Other' },
 ];
 
 interface Tier1Result {
@@ -119,7 +119,7 @@ Respond with a JSON array: [{ "id": number, "category": string, "confidence": nu
             const arr: unknown = Array.isArray(parsed)
                 ? parsed
                 : (parsed as Record<string, unknown>).items ??
-                  Object.values(parsed as Record<string, unknown>).find(Array.isArray);
+                Object.values(parsed as Record<string, unknown>).find(Array.isArray);
 
             if (Array.isArray(arr)) {
                 for (const item of arr as OpenAIResultItem[]) {

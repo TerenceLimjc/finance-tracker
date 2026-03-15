@@ -6,8 +6,8 @@ import App from './App';
 import './styles/global.css';
 
 async function bootstrap() {
-    // Start MSW mock service worker in development only
-    if (import.meta.env.DEV) {
+    // Start MSW mock service worker only when VITE_MOCK_API=true
+    if (import.meta.env.VITE_MOCK_API === 'true') {
         const { worker } = await import('./mocks/browser');
         await worker.start({
             onUnhandledRequest: 'bypass', // let non-API requests through silently
