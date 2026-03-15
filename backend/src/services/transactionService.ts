@@ -1,11 +1,191 @@
-/**
- * TransactionService
- *
- * Business logic for querying and mutating transactions:
- * - Paginated filtered queries (month, category, search, sort)
- * - Inline category reassignment
- * - Monthly summary aggregation
- */
+import { getDb } from '../database/connection';
+
+export interface TransactionQuery {
+    month: string;           // YYYY-MM
+    categoryId?: number;
+    searchText?: string;
+    sortField?: 'transactionDate' | 'amount';
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    pageSize?: number;
+}
+
 export class TransactionService {
-    // TODO: implement
+    /**
+     * Returns a paginated, filtered list of transactions with their category name.
+     */
+    list(query: TransactionQuery) {
+        const db = getDb();
+
+        const {
+            month,
+            categoryId,
+            searchText,
+            sortField = 'transactionDate',
+            sortOrder = 'desc',
+            page = 1,
+            pageSize = 25,
+        } = query;
+
+        const offset = (page - 1) * pageSize;
+        const monthPattern = `${month}-%`;
+
+        // Map camelCase sort field → DB column
+        const sortCol = sortField === 'amount' ? 't.amount' : 't.transaction_date';
+        const order = sortOrder === 'asc' ? 'ASC' : 'DESC';
+
+        const conditions: string[] = ['t.transaction_date LIKE ?'];
+        const params: (string | number)[] = [monthPattern];
+
+        if (categoryId !== undefined) {
+            conditions.push('t.category_id = ?');
+            params.push(categoryId);
+        }
+
+        if (searchText) {
+            conditions.push('(t.description LIKE ? OR t.merchant LIKE ?)');
+            const like = `%${searchText}%`;
+            params.push(like, like);
+        }
+
+        const where = conditions.join(' AND ');
+
+        const total: number = (db.prepare(`
+            SELECT COUNT(*) AS cnt
+            FROM transactions t
+            WHERE ${where}
+        `).get(...params) as { cnt: number }).cnt;
+
+        const data = db.prepare(`
+            SELECT
+                t.id,
+                t.upload_id           AS uploadId,
+                t.transaction_date    AS transactionDate,
+                t.amount,
+                t.description,
+                t.merchant,
+                t.category_id         AS categoryId,
+                c.name                AS categoryName,
+                t.category_confidence AS categoryConfidence,
+                t.user_notes          AS userNotes
+            FROM transactions t
+            LEFT JOIN categories c ON c.id = t.category_id
+            WHERE ${where}
+            ORDER BY ${sortCol} ${order}
+            LIMIT ? OFFSET ?
+        `).all(...params, pageSize, offset);
+
+        return { data, total, page, pageSize };
+    }
+
+    /**
+     * Reassigns the category of a single transaction (user-driven edit).
+     * Sets confidence to 1.0 (manual = certain).
+     */
+    updateCategory(id: number, categoryId: number): boolean {
+        const db = getDb();
+        const result = db.prepare(`
+            UPDATE transactions
+            SET category_id = ?, category_confidence = 1.0
+            WHERE id = ?
+        `).run(categoryId, id);
+        return result.changes > 0;
+    }
+
+    /**
+     * Monthly spending summary + category breakdown for the analytics route.
+     */
+    getMonthlySummary(month: string) {
+        const db = getDb();
+
+        const monthPattern = `${month}-%`;
+
+        // Prior month (handles Jan → Dec year rollback)
+        const [year, mon] = month.split('-').map(Number);
+        const priorDate = new Date(year, mon - 2, 1); // month is 0-indexed
+        const priorMonth = `${priorDate.getFullYear()}-${String(priorDate.getMonth() + 1).padStart(2, '0')}`;
+        const priorPattern = `${priorMonth}-%`;
+
+        const totalsRow = db.prepare(`
+            SELECT
+                COUNT(*) AS transactionCount,
+                SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS totalSpend
+            FROM transactions
+            WHERE transaction_date LIKE ?
+        `).get(monthPattern) as { transactionCount: number; totalSpend: number | null };
+
+        const priorRow = db.prepare(`
+            SELECT SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS totalSpend
+            FROM transactions
+            WHERE transaction_date LIKE ?
+        `).get(priorPattern) as { totalSpend: number | null };
+
+        const totalSpend = totalsRow.totalSpend ?? 0;
+        const priorSpend = priorRow.totalSpend ?? 0;
+
+        const categories = db.prepare(`
+            SELECT
+                t.category_id  AS categoryId,
+                c.name         AS categoryName,
+                SUM(ABS(t.amount)) AS total,
+                COUNT(*)           AS transactionCount
+            FROM transactions t
+            JOIN categories c ON c.id = t.category_id
+            WHERE t.transaction_date LIKE ?
+              AND t.amount < 0
+              AND t.category_id IS NOT NULL
+            GROUP BY t.category_id
+            ORDER BY total DESC
+        `).all(monthPattern) as Array<{ categoryId: number; categoryName: string; total: number; transactionCount: number }>;
+
+        const categoriesWithPct = categories.map((cat) => ({
+            ...cat,
+            percentage: totalSpend > 0 ? (cat.total / totalSpend) * 100 : 0,
+        }));
+
+        return {
+            month,
+            totalSpend,
+            transactionCount: totalsRow.transactionCount,
+            changeAmount: totalSpend - priorSpend,
+            changePercent: priorSpend > 0 ? ((totalSpend - priorSpend) / priorSpend) * 100 : 0,
+            categories: categoriesWithPct,
+        };
+    }
+
+    /**
+     * Batch-insert parsed transactions tied to an upload.
+     */
+    insertBatch(
+        uploadId: number,
+        transactions: Array<{
+            transactionDate: string;
+            amount: number;
+            description: string;
+            merchant?: string;
+            categoryId?: number;
+            categoryConfidence?: number;
+        }>,
+    ): void {
+        const db = getDb();
+        const insert = db.prepare(`
+            INSERT INTO transactions
+                (upload_id, transaction_date, amount, description, merchant, category_id, category_confidence)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+        const insertMany = db.transaction((rows: typeof transactions) => {
+            for (const row of rows) {
+                insert.run(
+                    uploadId,
+                    row.transactionDate,
+                    row.amount,
+                    row.description,
+                    row.merchant ?? null,
+                    row.categoryId ?? null,
+                    row.categoryConfidence ?? null,
+                );
+            }
+        });
+        insertMany(transactions);
+    }
 }

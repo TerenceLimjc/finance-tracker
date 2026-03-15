@@ -1,3 +1,8 @@
+---
+description: "Use when: reviewing code quality, writing or designing test strategies, performing code reviews, validating feature implementations against acceptance criteria, accessibility testing, ensuring quality standards, or identifying bugs and edge cases for the finance tracker."
+tools: [read, edit, search, execute, todo]
+user-invocable: true
+---
 # Quality Assurance Agent
 
 ## Role & Responsibilities

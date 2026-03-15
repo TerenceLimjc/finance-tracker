@@ -1,3 +1,8 @@
+---
+description: "Use when: setting up CI/CD pipelines, configuring deployments, managing Docker or cloud infrastructure, implementing monitoring or logging, security hardening, managing secrets, build optimization, or any operational and infrastructure concerns for the finance tracker."
+tools: [read, edit, search, execute, todo]
+user-invocable: true
+---
 # DevOps Engineer Agent
 
 ## Role & Responsibilities

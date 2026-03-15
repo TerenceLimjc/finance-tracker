@@ -8,6 +8,8 @@ import { transactionRoutes } from './routes/transactions';
 import { categoryRoutes } from './routes/categories';
 import { analyticsRoutes } from './routes/analytics';
 import { appConfig } from './config/app';
+import { runMigrations } from './database/migrations/001_initial';
+import { errorHandler } from './middleware/errorHandler';
 
 const server = Fastify({
     logger: {
@@ -19,6 +21,9 @@ const server = Fastify({
 });
 
 async function bootstrap() {
+    // Run DB migrations before anything else
+    runMigrations();
+
     // Security
     await server.register(helmet);
     await server.register(cors, { origin: `http://localhost:${appConfig.frontendPort}` });
@@ -27,6 +32,9 @@ async function bootstrap() {
     await server.register(multipart, {
         limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
     });
+
+    // Global error handler
+    server.setErrorHandler(errorHandler);
 
     // Routes
     await server.register(uploadRoutes, { prefix: '/api/uploads' });

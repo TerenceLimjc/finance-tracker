@@ -1,3 +1,8 @@
+---
+description: "Use when: defining product requirements, writing user stories, prioritizing features, planning the product roadmap, reviewing acceptance criteria, validating that implementations meet user needs, or aligning technical work with business goals for the finance tracker."
+tools: [read, search, todo]
+user-invocable: true
+---
 # Product Manager Agent
 
 ## Role & Responsibilities

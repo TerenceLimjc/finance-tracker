@@ -1,11 +1,25 @@
 import type { FastifyInstance } from 'fastify';
+import { getDb } from '../database/connection';
 
 /**
  * Category routes
  *
- * GET /api/categories           — list all categories
+ * GET /api/categories  — list all categories
  */
 export async function categoryRoutes(fastify: FastifyInstance) {
-    // TODO: implement route handlers — see docs/system-architecture.md API Design
-    fastify.log.info('Category routes registered');
+    fastify.get('/', async (_req, reply) => {
+        const db = getDb();
+        const rows = db.prepare(`
+            SELECT
+                id,
+                name,
+                parent_id    AS parentId,
+                color,
+                icon,
+                CASE is_custom WHEN 1 THEN 1 ELSE 0 END AS isCustom
+            FROM categories
+            ORDER BY name ASC
+        `).all();
+        return reply.send(rows);
+    });
 }

@@ -21,7 +21,7 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 
 function slicePath(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(cx, cy, r, endAngle);
-    const end   = polarToCartesian(cx, cy, r, startAngle);
+    const end = polarToCartesian(cx, cy, r, startAngle);
     const large = endAngle - startAngle > 180 ? 1 : 0;
     return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${large} 0 ${end.x} ${end.y} Z`;
 }
@@ -30,7 +30,7 @@ function slicePath(cx: number, cy: number, r: number, startAngle: number, endAng
 
 export function CategoryPieChart({ data, isLoading = false }: Props) {
     const activeCategoryId = useFilterStore((s) => s.activeCategoryId);
-    const toggleCategory   = useFilterStore((s) => s.toggleCategory);
+    const toggleCategory = useFilterStore((s) => s.toggleCategory);
 
     const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [tooltip, setTooltip] = useState<{ x: number; y: number; cat: CategorySpending } | null>(null);
@@ -42,7 +42,7 @@ export function CategoryPieChart({ data, isLoading = false }: Props) {
     const SIZE = 260;
     const cx = SIZE / 2;
     const cy = SIZE / 2;
-    const R  = SIZE / 2 - 10;
+    const R = SIZE / 2 - 10;
 
     let cursor = 0;
     const slices = sortedData.map((cat) => {
@@ -82,11 +82,11 @@ export function CategoryPieChart({ data, isLoading = false }: Props) {
                         onMouseLeave={() => { setHoveredId(null); setTooltip(null); }}
                     >
                         {slices.map(({ cat, start, end }) => {
-                            const isActive   = activeCategoryId === cat.categoryId;
+                            const isActive = activeCategoryId === cat.categoryId;
                             const isFiltered = activeCategoryId !== null && !isActive;
-                            const isHovered  = hoveredId === cat.categoryId;
-                            const color      = CATEGORY_COLORS[cat.categoryName] ?? '#d9d9d9';
-                            const scale      = isHovered || isActive ? 1.04 : 1;
+                            const isHovered = hoveredId === cat.categoryId;
+                            const color = CATEGORY_COLORS[cat.categoryName] ?? '#d9d9d9';
+                            const scale = isHovered || isActive ? 1.04 : 1;
 
                             return (
                                 <path
@@ -141,7 +141,7 @@ export function CategoryPieChart({ data, isLoading = false }: Props) {
                 {/* ── Custom legend ── */}
                 <div style={{ width: 280 }}>
                     {sortedData.map((cat) => {
-                        const isActive   = activeCategoryId === cat.categoryId;
+                        const isActive = activeCategoryId === cat.categoryId;
                         const isFiltered = activeCategoryId !== null && !isActive;
                         return (
                             <div

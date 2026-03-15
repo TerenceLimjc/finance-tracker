@@ -1,30 +1,30 @@
 # Multiagent Configuration for Finance Tracker
 
 ## Technology Standards
-- **Frontend UI Library**: Ant Design (antd) v5.x as the primary component library
+- **Frontend UI Library**: Ant Design (antd) v6.x as the primary component library
 - **Design System**: Custom theming built on Ant Design foundation
 - **Component Strategy**: Use Ant Design components first, create custom only when necessary
 
 ## Agent Roles & Responsibilities
 
-### 1. System Architect (`architect.chatmode.md`)
+### 1. System Architect (`architect.agent.md`)
 -## Agent Activation Commands
 
-To activate specific agents, use their respective chatmode files:
-- **Architect**: `.github/chatmodes/architect.chatmode.md`
-- **Implementation Engineer**: `.github/chatmodes/implementation-engineer.chatmode.md`
-- **QA Engineer**: `.github/chatmodes/qa-engineer.chatmode.md`
-- **Product Manager**: `.github/chatmodes/product-manager.chatmode.md`
-- **DevOps Engineer**: `.github/chatmodes/devops-engineer.chatmode.md`
-- **ML Engineer**: `.github/chatmodes/ml-engineer.chatmode.md`
-- **UX/UI Designer**: `.github/chatmodes/ux-ui-designer.chatmode.md`
+To activate specific agents, use their respective agent files:
+- **Architect**: `.github/agents/architect.agent.md`
+- **Implementation Engineer**: `.github/agents/implementation-engineer.agent.md`
+- **QA Engineer**: `.github/agents/qa-engineer.agent.md`
+- **Product Manager**: `.github/agents/product-manager.agent.md`
+- **DevOps Engineer**: `.github/agents/devops-engineer.agent.md`
+- **ML Engineer**: `.github/agents/ml-engineer.agent.md`
+- **UX/UI Designer**: `.github/agents/ux-ui-designer.agent.md`
+- **Config Auditor**: `.github/agents/config-auditor.agent.md`
 
 ## Additional Resources
 
 ### Comprehensive Guides
 - **Complete Setup Guide**: `.github/multiagent-development-guide.md`
 - **Quick Start Guide**: `.github/quick-start-multiagent.md`
-- **Decision Templates**: `.github/templates/agent-decision-templates.md`
 
 ### Getting Started
 1. Read the Quick Start Guide first
@@ -38,7 +38,7 @@ To activate specific agents, use their respective chatmode files:
   - Define module boundaries and interfaces
 - **When to engage**: Major feature planning, system design, technical decisions
 
-### 2. Implementation Engineer (`implementation-engineer.chatmode.md`)
+### 2. Implementation Engineer (`implementation-engineer.agent.md`)
 - **Primary Focus**: Detailed implementation and code development
 - **Responsibilities**:
   - Write production-ready code
@@ -47,7 +47,7 @@ To activate specific agents, use their respective chatmode files:
   - Manage code quality and best practices
 - **When to engage**: Feature development, bug fixes, code refactoring
 
-### 3. Quality Assurance (`qa-engineer.chatmode.md`)
+### 3. Quality Assurance (`qa-engineer.agent.md`)
 - **Primary Focus**: Testing, code review, and quality assurance
 - **Responsibilities**:
   - Design and implement test strategies
@@ -56,7 +56,7 @@ To activate specific agents, use their respective chatmode files:
   - Validate implementations against requirements
 - **When to engage**: Code reviews, testing strategy, quality validation
 
-### 4. Product Manager (`product-manager.chatmode.md`)
+### 4. Product Manager (`product-manager.agent.md`)
 - **Primary Focus**: Product requirements and user experience
 - **Responsibilities**:
   - Define product requirements and user stories
@@ -65,7 +65,7 @@ To activate specific agents, use their respective chatmode files:
   - Validate solutions against business needs
 - **When to engage**: Feature planning, requirements definition, UX decisions
 
-### 5. DevOps Engineer (`devops-engineer.chatmode.md`)
+### 5. DevOps Engineer (`devops-engineer.agent.md`)
 - **Primary Focus**: Deployment, infrastructure, and operations
 - **Responsibilities**:
   - Design and manage CI/CD pipelines
@@ -74,7 +74,7 @@ To activate specific agents, use their respective chatmode files:
   - Manage deployments and operational concerns
 - **When to engage**: Deployment setup, infrastructure needs, operational issues
 
-### 6. Machine Learning Engineer (`ml-engineer.chatmode.md`)
+### 6. Machine Learning Engineer (`ml-engineer.agent.md`)
 - **Primary Focus**: ML model development and intelligent features
 - **Responsibilities**:
   - Design and train ML models for financial applications
@@ -83,7 +83,7 @@ To activate specific agents, use their respective chatmode files:
   - Ensure ML privacy, security, and performance standards
 - **When to engage**: Intelligent features, data analysis, predictive capabilities
 
-### 7. UX/UI Designer (`ux-ui-designer.chatmode.md`)
+### 7. UX/UI Designer (`ux-ui-designer.agent.md`)
 - **Primary Focus**: User experience and interface design
 - **Responsibilities**:
   - Design intuitive user workflows and interactions
@@ -163,7 +163,7 @@ To activate specific agents, use their respective chatmode files:
 ## Usage Guidelines
 
 ### Selecting the Right Agent
-- Use specific agent chatmodes when you need specialized expertise
+- Use specific agents when you need specialized expertise
 - Start with Product Manager for new feature discussions
 - Engage Architect for system design and technical strategy
 - Use Implementation Engineer for hands-on coding tasks
@@ -180,10 +180,12 @@ To activate specific agents, use their respective chatmode files:
 
 ## Agent Activation Commands
 
-To activate specific agents, use their respective chatmode files:
-- **Architect**: `.github/chatmodes/architect.chatmode.md`
-- **Implementation Engineer**: `.github/chatmodes/implementation-engineer.chatmode.md`
-- **QA Engineer**: `.github/chatmodes/qa-engineer.chatmode.md`
-- **Product Manager**: `.github/chatmodes/product-manager.chatmode.md`
-- **DevOps Engineer**: `.github/chatmodes/devops-engineer.chatmode.md`
-- **ML Engineer**: `.github/chatmodes/ml-engineer.chatmode.md`
+To activate specific agents, use their respective agent files:
+- **Architect**: `.github/agents/architect.agent.md`
+- **Implementation Engineer**: `.github/agents/implementation-engineer.agent.md`
+- **QA Engineer**: `.github/agents/qa-engineer.agent.md`
+- **Product Manager**: `.github/agents/product-manager.agent.md`
+- **DevOps Engineer**: `.github/agents/devops-engineer.agent.md`
+- **ML Engineer**: `.github/agents/ml-engineer.agent.md`
+- **UX/UI Designer**: `.github/agents/ux-ui-designer.agent.md`
+- **Config Auditor**: `.github/agents/config-auditor.agent.md`
