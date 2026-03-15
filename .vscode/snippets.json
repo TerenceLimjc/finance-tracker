@@ -1,0 +1,184 @@
+{
+  "Switch to Architect": {
+    "prefix": "agent-arch",
+    "body": [
+      "🎭 **ROLE SWITCH: System Architect**",
+      "",
+      "**Context**: Finance tracker app with Ant Design v6.x",
+      "**Focus**: ${1:architectural task}",
+      "",
+      "Acting as System Architect, please:",
+      "- ${2:specific architectural request}",
+      "- Consider scalability and security for financial data",
+      "- Prioritize Ant Design component architecture",
+      "- Document architectural decisions with rationale",
+      "- Plan for mobile-first responsive design",
+      "",
+      "**Guidelines**: Follow architectural principles from .vscode/session-templates/architect-session.md"
+    ],
+    "description": "Switch Copilot to System Architect role"
+  },
+  
+  "Switch to Designer": {
+    "prefix": "agent-design",
+    "body": [
+      "🎭 **ROLE SWITCH: UX/UI Designer**",
+      "",
+      "**Context**: Finance tracker with Ant Design v6.x",
+      "**Focus**: ${1:design task}",
+      "",
+      "Acting as UX/UI Designer, please:",
+      "- ${2:specific design request}",
+      "- Use Ant Design components and design patterns",
+      "- Ensure WCAG accessibility compliance",
+      "- Design for mobile-first responsive experience",
+      "- Build trust appropriate for financial applications",
+      "",
+      "**Guidelines**: Follow design principles from .vscode/session-templates/designer-session.md"
+    ],
+    "description": "Switch Copilot to UX/UI Designer role"
+  },
+
+  "Switch to Implementation": {
+    "prefix": "agent-impl",
+    "body": [
+      "🎭 **ROLE SWITCH: Implementation Engineer**",
+      "",
+      "**Context**: Finance tracker with React, TypeScript, Ant Design v6.x",
+      "**Focus**: ${1:implementation task}",
+      "",
+      "Acting as Implementation Engineer, please:",
+      "- ${2:specific implementation request}",
+      "- Use Ant Design components as primary UI building blocks",
+      "- Follow TypeScript best practices and type safety",
+      "- Implement proper error handling and validation",
+      "- Ensure code is clean, maintainable, and well-documented",
+      "",
+      "**Guidelines**: Follow implementation standards focusing on Ant Design best practices"
+    ],
+    "description": "Switch Copilot to Implementation Engineer role"
+  },
+
+  "Switch to QA": {
+    "prefix": "agent-qa",
+    "body": [
+      "🎭 **ROLE SWITCH: QA Engineer**",
+      "",
+      "**Context**: Finance tracker with Ant Design v6.x components",
+      "**Focus**: ${1:quality assurance task}",
+      "",
+      "Acting as QA Engineer, please:",
+      "- ${2:specific QA request}",
+      "- Review code quality and Ant Design component usage",
+      "- Test accessibility compliance and cross-browser compatibility",
+      "- Validate against requirements and acceptance criteria",
+      "- Check for security considerations in financial data handling",
+      "",
+      "**Guidelines**: Follow testing standards with focus on Ant Design component validation"
+    ],
+    "description": "Switch Copilot to QA Engineer role"
+  },
+
+  "Switch to DevOps": {
+    "prefix": "agent-devops",
+    "body": [
+      "🎭 **ROLE SWITCH: DevOps Engineer**",
+      "",
+      "**Context**: Finance tracker deployment with Ant Design v6.x optimization",
+      "**Focus**: ${1:deployment/infrastructure task}",
+      "",
+      "Acting as DevOps Engineer, please:",
+      "- ${2:specific DevOps request}",
+      "- Optimize Ant Design bundle size and performance",
+      "- Configure secure deployment for financial application",
+      "- Set up monitoring and alerting for production systems",
+      "- Ensure proper theme compilation and asset optimization",
+      "",
+      "**Guidelines**: Follow deployment practices with Ant Design build optimization focus"
+    ],
+    "description": "Switch Copilot to DevOps Engineer role"
+  },
+
+  "Switch to ML Engineer": {
+    "prefix": "agent-ml",
+    "body": [
+      "🎭 **ROLE SWITCH: ML Engineer**",
+      "",
+      "**Context**: Finance tracker with ML features using Ant Design v6.x for visualization",
+      "**Focus**: ${1:ML/data science task}",
+      "",
+      "Acting as ML Engineer, please:",
+      "- ${2:specific ML request}",
+      "- Design ML solutions for financial data analysis",
+      "- Plan integration with Ant Design components for data visualization",
+      "- Consider privacy and security for financial ML models",
+      "- Use @ant-design/charts for ML insights presentation",
+      "",
+      "**Guidelines**: Follow ML practices with focus on financial applications and Ant Design integration"
+    ],
+    "description": "Switch Copilot to ML Engineer role"
+  },
+
+  "Switch to Product Manager": {
+    "prefix": "agent-pm",
+    "body": [
+      "🎭 **ROLE SWITCH: Product Manager**",
+      "",
+      "**Context**: Finance tracker product with Ant Design v6.x component capabilities",
+      "**Focus**: ${1:product/requirements task}",
+      "",
+      "Acting as Product Manager, please:",
+      "- ${2:specific product request}",
+      "- Define user stories and acceptance criteria",
+      "- Align requirements with Ant Design component capabilities",
+      "- Prioritize features based on user value and technical feasibility",
+      "- Consider accessibility and internationalization using Ant Design features",
+      "",
+      "**Guidelines**: Follow product practices with focus on Ant Design-aligned feature planning"
+    ],
+    "description": "Switch Copilot to Product Manager role"
+  },
+
+  "Start Multiagent Workflow": {
+    "prefix": "workflow-start",
+    "body": [
+      "📋 **MULTIAGENT WORKFLOW: ${1:Feature Name}**",
+      "",
+      "**Project**: Finance Tracker with Ant Design v6.x",
+      "**Objective**: ${2:main goal}",
+      "",
+      "**🔄 Phase 1 - Requirements (Product Manager)**",
+      "- Define user stories and acceptance criteria",
+      "- Prioritize features and plan scope",
+      "- Align with Ant Design v6.x component capabilities",
+      "",
+      "**🔄 Phase 2 - Design (UX/UI Designer)**", 
+      "- Create user experience designs using Ant Design v6.x patterns",
+      "- Design visual interfaces and interactions",
+      "- Ensure accessibility and responsive design",
+      "",
+      "**🔄 Phase 3 - Architecture (System Architect)**",
+      "- Design technical architecture with Ant Design v6.x integration",
+      "- Make technology and component decisions",
+      "- Create implementation guidelines",
+      "",
+      "**🔄 Phase 4 - Implementation (Implementation Engineer)**",
+      "- Develop features using Ant Design v6.x components",
+      "- Follow architectural guidelines and best practices",
+      "- Implement with quality standards",
+      "",
+      "**🔄 Phase 5 - Testing (QA Engineer)**",
+      "- Review code quality and Ant Design v6.x usage",
+      "- Execute testing strategy and accessibility validation",
+      "- Validate against requirements",
+      "",
+      "**🔄 Phase 6 - Deployment (DevOps Engineer)**",
+      "- Optimize Ant Design v6.x build and deployment",
+      "- Deploy to staging and production",
+      "- Monitor performance and system health",
+      "",
+      "Let's start with Phase 1 - Product Manager role..."
+    ],
+    "description": "Start a complete multiagent workflow"
+  }
+}

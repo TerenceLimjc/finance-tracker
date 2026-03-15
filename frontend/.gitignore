@@ -1,0 +1,25 @@
+# ─── Build output ─────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ─── Vite cache ───────────────────────────────────────────────────────────────
+.vite/
+
+# ─── TypeScript incremental build cache ───────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Test coverage ────────────────────────────────────────────────────────────
+coverage/
+
+# ─── Storybook (if added later) ───────────────────────────────────────────────
+storybook-static/

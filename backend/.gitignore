@@ -1,0 +1,27 @@
+# ─── Build output ─────────────────────────────────────────────────────────────
+dist/
+
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+# .env.example is committed — actual secrets are not
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ─── TypeScript incremental build cache ───────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Test coverage ────────────────────────────────────────────────────────────
+coverage/
+
+# ─── Uploaded files processed during testing ──────────────────────────────────
+tmp/
+
+# ─── SQLite database files (runtime only) ─────────────────────────────────────
+*.db
+*.db-wal
+*.db-shm

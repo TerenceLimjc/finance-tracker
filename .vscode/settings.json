@@ -1,0 +1,30 @@
+{
+  "github.copilot.chat.claudeAgent.enabled": true,
+  "github.copilot.enable": {
+    "*": true
+  },
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "claude-3.5-sonnet",
+    "debug.useNodeFetcher": true
+  },
+  // TypeScript — point each workspace at its own tsconfig
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  // File associations
+  "files.associations": {
+    "*.css": "css"
+  },
+  // Exclude runtime directories from the file explorer
+  "files.exclude": {
+    "**/node_modules": true,
+    "database/**": true,
+    "uploads/**": true,
+    "logs/**": true,
+    "frontend/dist/**": true,
+    "backend/dist/**": true
+  },
+  // ESLint watches both workspaces
+  "eslint.workingDirectories": ["frontend", "backend"],
+  // Format on save
+  "editor.formatOnSave": true
+}
