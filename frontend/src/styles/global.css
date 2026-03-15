@@ -3,28 +3,30 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* Monospace font for all currency / numeric values */
 .finance-mono {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-variant-numeric: tabular-nums;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Amount colors */
 .amount-negative {
-  color: #cf1322; /* Ant Design red-7 */
+    color: #cf1322;
+    /* Ant Design red-7 */
 }
 
 .amount-positive {
-  color: #389e0d; /* Ant Design green-7 */
+    color: #389e0d;
+    /* Ant Design green-7 */
 }

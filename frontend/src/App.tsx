@@ -6,22 +6,22 @@ import { UploadsPage } from '@/pages/UploadsPage';
 import { theme } from '@/styles/theme';
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <AppLayout />,
-    children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'uploads', element: <UploadsPage /> },
-    ],
-  },
+    {
+        path: '/',
+        element: <AppLayout />,
+        children: [
+            { index: true, element: <DashboardPage /> },
+            { path: 'uploads', element: <UploadsPage /> },
+        ],
+    },
 ]);
 
 export default function App() {
-  return (
-    <ConfigProvider theme={theme}>
-      <AntApp>
-        <RouterProvider router={router} />
-      </AntApp>
-    </ConfigProvider>
-  );
+    return (
+        <ConfigProvider theme={theme}>
+            <AntApp>
+                <RouterProvider router={router} />
+            </AntApp>
+        </ConfigProvider>
+    );
 }

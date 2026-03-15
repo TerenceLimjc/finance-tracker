@@ -10,6 +10,6 @@
  *  - Monospace font for Amount cells
  */
 export function TransactionTable() {
-  // TODO: implement — see docs/ui-design-spec.md Transaction Table section
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md Transaction Table section
+    return null;
 }

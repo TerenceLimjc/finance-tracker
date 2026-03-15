@@ -9,6 +9,6 @@
  *  - Bulk "Delete Selected" + Refresh buttons below the table
  */
 export function UploadHistory() {
-  // TODO: implement — see docs/ui-design-spec.md Screen 2 Upload History
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md Screen 2 Upload History
+    return null;
 }

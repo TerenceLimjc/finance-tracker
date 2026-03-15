@@ -8,6 +8,6 @@ import type { FastifyInstance } from 'fastify';
  * DELETE /api/uploads/:id      — delete upload + cascade transactions
  */
 export async function uploadRoutes(fastify: FastifyInstance) {
-  // TODO: implement route handlers — see docs/system-architecture.md API Design
-  fastify.log.info('Upload routes registered');
+    // TODO: implement route handlers — see docs/system-architecture.md API Design
+    fastify.log.info('Upload routes registered');
 }

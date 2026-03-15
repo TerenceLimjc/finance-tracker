@@ -24,7 +24,10 @@
     "backend/dist/**": true
   },
   // ESLint watches both workspaces
-  "eslint.workingDirectories": ["frontend", "backend"],
+  "eslint.workingDirectories": [
+    "frontend",
+    "backend"
+  ],
   // Format on save
   "editor.formatOnSave": true
 }

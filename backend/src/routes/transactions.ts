@@ -7,6 +7,6 @@ import type { FastifyInstance } from 'fastify';
  * PUT /api/transactions/:id     — update category (inline edit)
  */
 export async function transactionRoutes(fastify: FastifyInstance) {
-  // TODO: implement route handlers — see docs/system-architecture.md API Design
-  fastify.log.info('Transaction routes registered');
+    // TODO: implement route handlers — see docs/system-architecture.md API Design
+    fastify.log.info('Transaction routes registered');
 }

@@ -10,5 +10,5 @@
  * 6. Update upload record with status = 'done' / 'failed'
  */
 export class UploadService {
-  // TODO: implement
+    // TODO: implement
 }

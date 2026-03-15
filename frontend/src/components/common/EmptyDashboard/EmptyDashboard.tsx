@@ -9,19 +9,19 @@ import { useNavigate } from 'react-router-dom';
  * that navigates to the Uploads page.
  */
 export function EmptyDashboard() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <Empty
-      description="No transactions yet"
-      style={{ marginTop: 120 }}
-    >
-      <p style={{ color: '#8c8c8c', marginBottom: 16 }}>
-        Upload a bank statement to get started
-      </p>
-      <Button type="primary" onClick={() => navigate('/uploads')}>
-        Go to Uploads
-      </Button>
-    </Empty>
-  );
+    return (
+        <Empty
+            description="No transactions yet"
+            style={{ marginTop: 120 }}
+        >
+            <p style={{ color: '#8c8c8c', marginBottom: 16 }}>
+                Upload a bank statement to get started
+            </p>
+            <Button type="primary" onClick={() => navigate('/uploads')}>
+                Go to Uploads
+            </Button>
+        </Empty>
+    );
 }

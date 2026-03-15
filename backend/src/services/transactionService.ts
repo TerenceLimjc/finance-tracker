@@ -7,5 +7,5 @@
  * - Monthly summary aggregation
  */
 export class TransactionService {
-  // TODO: implement
+    // TODO: implement
 }

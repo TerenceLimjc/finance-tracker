@@ -6,6 +6,6 @@
  * On successful drop/select, calls useUploadFile mutation.
  */
 export function UploadZone() {
-  // TODO: implement — see docs/ui-design-spec.md Screen 2 Upload Zone
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md Screen 2 Upload Zone
+    return null;
 }

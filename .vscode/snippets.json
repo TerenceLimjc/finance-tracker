@@ -18,7 +18,6 @@
     ],
     "description": "Switch Copilot to System Architect role"
   },
-  
   "Switch to Designer": {
     "prefix": "agent-design",
     "body": [
@@ -38,7 +37,6 @@
     ],
     "description": "Switch Copilot to UX/UI Designer role"
   },
-
   "Switch to Implementation": {
     "prefix": "agent-impl",
     "body": [
@@ -58,7 +56,6 @@
     ],
     "description": "Switch Copilot to Implementation Engineer role"
   },
-
   "Switch to QA": {
     "prefix": "agent-qa",
     "body": [
@@ -78,7 +75,6 @@
     ],
     "description": "Switch Copilot to QA Engineer role"
   },
-
   "Switch to DevOps": {
     "prefix": "agent-devops",
     "body": [
@@ -98,7 +94,6 @@
     ],
     "description": "Switch Copilot to DevOps Engineer role"
   },
-
   "Switch to ML Engineer": {
     "prefix": "agent-ml",
     "body": [
@@ -118,7 +113,6 @@
     ],
     "description": "Switch Copilot to ML Engineer role"
   },
-
   "Switch to Product Manager": {
     "prefix": "agent-pm",
     "body": [
@@ -138,7 +132,6 @@
     ],
     "description": "Switch Copilot to Product Manager role"
   },
-
   "Start Multiagent Workflow": {
     "prefix": "workflow-start",
     "body": [
@@ -152,7 +145,7 @@
       "- Prioritize features and plan scope",
       "- Align with Ant Design v6.x component capabilities",
       "",
-      "**🔄 Phase 2 - Design (UX/UI Designer)**", 
+      "**🔄 Phase 2 - Design (UX/UI Designer)**",
       "- Create user experience designs using Ant Design v6.x patterns",
       "- Design visual interfaces and interactions",
       "- Ensure accessibility and responsive design",

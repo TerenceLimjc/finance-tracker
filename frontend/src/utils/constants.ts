@@ -1,11 +1,11 @@
 /** Accepted file MIME types for bank statement upload */
 export const ACCEPTED_FILE_TYPES = [
-  'application/pdf',
-  'text/csv',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/x-ofx',
-  'application/x-qif',
+    'application/pdf',
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/x-ofx',
+    'application/x-qif',
 ];
 
 /** Accepted file extensions shown in the upload zone */

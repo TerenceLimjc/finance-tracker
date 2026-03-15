@@ -7,6 +7,6 @@
  * Reads and writes selectedMonth from filterStore.
  */
 export function MonthSelector() {
-  // TODO: implement — see docs/ui-design-spec.md Month navigation notes
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md Month navigation notes
+    return null;
 }

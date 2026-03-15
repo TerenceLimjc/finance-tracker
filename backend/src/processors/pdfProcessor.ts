@@ -7,8 +7,8 @@ import type { BaseProcessor, ParsedTransaction } from './baseProcessor';
  * transaction rows from bank-statement PDFs.
  */
 export class PdfProcessor implements BaseProcessor {
-  async parse(_filePath: string): Promise<ParsedTransaction[]> {
-    // TODO: implement — pdf-parse → text extraction → row parsing
-    return [];
-  }
+    async parse(_filePath: string): Promise<ParsedTransaction[]> {
+        // TODO: implement — pdf-parse → text extraction → row parsing
+        return [];
+    }
 }

@@ -7,6 +7,6 @@ import type { FastifyInstance } from 'fastify';
  * GET /api/analytics/categories — category totals for a period
  */
 export async function analyticsRoutes(fastify: FastifyInstance) {
-  // TODO: implement route handlers — see docs/system-architecture.md API Design
-  fastify.log.info('Analytics routes registered');
+    // TODO: implement route handlers — see docs/system-architecture.md API Design
+    fastify.log.info('Analytics routes registered');
 }

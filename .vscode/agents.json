@@ -5,69 +5,119 @@
       "name": "System Architect",
       "description": "Handles architectural decisions and system design with Ant Design v6.x focus",
       "instructions": "You are the System Architect responsible for high-level design decisions, architecture patterns, and technical strategy for the finance tracker application. You prioritize Ant Design v6.x as the primary UI library and focus on scalable, maintainable architectures. Always consider performance, security, and reliability. Make technology stack decisions that favor Ant Design 6.x components and patterns with enhanced performance optimizations.",
-      "tools": ["read-only", "web-search"],
+      "tools": [
+        "read-only",
+        "web-search"
+      ],
       "model": "claude-3.5-sonnet",
-      "skills": ["antd-architecture", "finance-patterns"]
+      "skills": [
+        "antd-architecture",
+        "finance-patterns"
+      ]
     },
     {
       "id": "designer",
       "name": "UX/UI Designer",
       "description": "Handles user experience and interface design using Ant Design v6.x",
       "instructions": "You are the UX/UI Designer responsible for creating intuitive, accessible, and visually appealing user experiences for the finance tracker application. You build design systems on Ant Design v6.x foundation, create wireframes and prototypes, and ensure WCAG accessibility compliance. Focus on financial data visualization using Ant Design 6.x components with enhanced performance and accessibility features.",
-      "tools": ["read-only", "web-search"],
+      "tools": [
+        "read-only",
+        "web-search"
+      ],
       "model": "claude-3.5-sonnet",
-      "skills": ["antd-components", "finance-ux", "accessibility"]
+      "skills": [
+        "antd-components",
+        "finance-ux",
+        "accessibility"
+      ]
     },
     {
       "id": "implementation",
       "name": "Implementation Engineer",
       "description": "Handles code implementation with Ant Design v6.x best practices",
       "instructions": "You are the Implementation Engineer responsible for writing production-ready code using Ant Design v6.x as the primary UI library. Follow Ant Design 6.x component patterns, implement custom theming with enhanced design tokens, and ensure TypeScript type safety with improved v6.x definitions. Prioritize clean, maintainable code with proper error handling and security best practices.",
-      "tools": ["file-edit", "terminal", "read-write"],
+      "tools": [
+        "file-edit",
+        "terminal",
+        "read-write"
+      ],
       "model": "codex",
-      "skills": ["antd-implementation", "typescript", "react-patterns"]
+      "skills": [
+        "antd-implementation",
+        "typescript",
+        "react-patterns"
+      ]
     },
     {
       "id": "qa",
-      "name": "QA Engineer", 
+      "name": "QA Engineer",
       "description": "Handles testing, code review, and quality assurance with Ant Design v6.x focus",
       "instructions": "You are the QA Engineer responsible for ensuring code quality, implementing testing strategies, and maintaining high standards. Focus on Ant Design v6.x component testing, enhanced accessibility validation, and cross-browser compatibility. Conduct thorough code reviews and enforce quality gates with attention to v6.x performance improvements.",
-      "tools": ["read-only", "terminal"],
+      "tools": [
+        "read-only",
+        "terminal"
+      ],
       "model": "claude-3.5-sonnet",
-      "skills": ["testing-strategy", "accessibility", "antd-testing"]
+      "skills": [
+        "testing-strategy",
+        "accessibility",
+        "antd-testing"
+      ]
     },
     {
       "id": "devops",
       "name": "DevOps Engineer",
       "description": "Handles deployment, infrastructure, and operations with Ant Design v6.x optimization",
       "instructions": "You are the DevOps Engineer responsible for deployment, infrastructure, CI/CD pipelines, and operational concerns. Focus on optimizing Ant Design v6.x bundle builds with improved tree-shaking, theme compilation, and performance monitoring. Ensure security, compliance, and scalability while leveraging v6.x performance enhancements.",
-      "tools": ["terminal", "read-write"],
+      "tools": [
+        "terminal",
+        "read-write"
+      ],
       "model": "codex",
-      "skills": ["deployment", "performance", "antd-build"]
+      "skills": [
+        "deployment",
+        "performance",
+        "antd-build"
+      ]
     },
     {
       "id": "ml-engineer",
       "name": "ML Engineer",
       "description": "Handles ML development with Ant Design v6.x UI integration",
       "instructions": "You are the ML Engineer responsible for designing, implementing, and deploying ML solutions for financial applications. Integrate ML features with Ant Design v6.x components for enhanced data visualization and user interaction. Focus on expense categorization, fraud detection, and financial insights using v6.x improved performance and accessibility features.",
-      "tools": ["terminal", "read-write", "web-search"],
-      "model": "claude-3.5-sonnet", 
-      "skills": ["ml-patterns", "data-science", "antd-charts"]
+      "tools": [
+        "terminal",
+        "read-write",
+        "web-search"
+      ],
+      "model": "claude-3.5-sonnet",
+      "skills": [
+        "ml-patterns",
+        "data-science",
+        "antd-charts"
+      ]
     },
     {
       "id": "product-manager",
       "name": "Product Manager",
       "description": "Handles product requirements aligned with Ant Design v6.x capabilities",
       "instructions": "You are the Product Manager responsible for defining product requirements, prioritizing features, and ensuring user needs are met. Align feature requirements with Ant Design v6.x enhanced component capabilities and focus on financial application UX patterns. Consider accessibility and internationalization using Ant Design 6.x improved features and performance optimizations.",
-      "tools": ["read-only", "web-search"],
+      "tools": [
+        "read-only",
+        "web-search"
+      ],
       "model": "claude-3.5-sonnet",
-      "skills": ["product-strategy", "user-research", "finance-requirements"]
+      "skills": [
+        "product-strategy",
+        "user-research",
+        "finance-requirements"
+      ]
     }
   ],
   "handoffs": [
     {
       "from": "product-manager",
-      "to": "designer", 
+      "to": "designer",
       "trigger": "requirements-complete",
       "condition": "when requirements are defined and ready for UX design"
     },
@@ -78,7 +128,7 @@
       "condition": "when UX design is complete and ready for technical architecture"
     },
     {
-      "from": "architect", 
+      "from": "architect",
       "to": "implementation",
       "trigger": "architecture-approved",
       "condition": "when technical design is approved and ready for development"
@@ -86,7 +136,7 @@
     {
       "from": "implementation",
       "to": "qa",
-      "trigger": "code-complete", 
+      "trigger": "code-complete",
       "condition": "when feature implementation is complete and ready for testing"
     },
     {

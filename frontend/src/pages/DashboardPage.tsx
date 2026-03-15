@@ -11,6 +11,6 @@
  * All data is fetched via hooks; layout is driven by Ant Design Layout.
  */
 export function DashboardPage() {
-  // TODO: implement — see docs/ui-design-spec.md Screen 1
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md Screen 1
+    return null;
 }

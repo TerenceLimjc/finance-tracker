@@ -12,6 +12,6 @@
  *  - onCategoryClick: (categoryId: number) => void
  */
 export function CategoryPieChart() {
-  // TODO: implement — see docs/ui-design-spec.md "Spending by Category" section
-  return null;
+    // TODO: implement — see docs/ui-design-spec.md "Spending by Category" section
+    return null;
 }

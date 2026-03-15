@@ -7,8 +7,8 @@ import type { BaseProcessor, ParsedTransaction } from './baseProcessor';
  * Auto-detects common bank CSV column layouts.
  */
 export class CsvProcessor implements BaseProcessor {
-  async parse(_filePath: string): Promise<ParsedTransaction[]> {
-    // TODO: implement — Papa Parse → column detection → normalise rows
-    return [];
-  }
+    async parse(_filePath: string): Promise<ParsedTransaction[]> {
+        // TODO: implement — Papa Parse → column detection → normalise rows
+        return [];
+    }
 }

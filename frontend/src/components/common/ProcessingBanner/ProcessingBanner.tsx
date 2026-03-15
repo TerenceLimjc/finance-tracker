@@ -9,18 +9,18 @@ import { useUploadStore } from '@/store/uploadStore';
  * User can also manually close it with the [x] button.
  */
 export function ProcessingBanner() {
-  const { showProcessingBanner, processingFilename, dismissBanner } = useUploadStore();
+    const { showProcessingBanner, processingFilename, dismissBanner } = useUploadStore();
 
-  if (!showProcessingBanner || !processingFilename) return null;
+    if (!showProcessingBanner || !processingFilename) return null;
 
-  return (
-    <Alert
-      type="warning"
-      showIcon
-      closable
-      onClose={dismissBanner}
-      message={`${processingFilename} is still processing — data may be incomplete.`}
-      style={{ marginBottom: 16 }}
-    />
-  );
+    return (
+        <Alert
+            type="warning"
+            showIcon
+            closable
+            onClose={dismissBanner}
+            message={`${processingFilename} is still processing — data may be incomplete.`}
+            style={{ marginBottom: 16 }}
+        />
+    );
 }
