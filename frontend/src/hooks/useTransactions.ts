@@ -1,20 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useShallow } from 'zustand/react/shallow';
 import { transactionService } from '@/services/transactionService';
 import { useFilterStore } from '@/store/filterStore';
 
 /**
  * Fetches the paginated transaction list for the currently selected filters.
+ * useShallow performs a shallow equality check so the selector object doesn't
+ * trigger an infinite re-render loop on every render.
  */
 export function useTransactions() {
-    const filters = useFilterStore((s) => ({
-        month: s.selectedMonth,
-        categoryId: s.activeCategoryId ?? undefined,
-        searchText: s.searchText || undefined,
-        sortField: s.sortField,
-        sortOrder: s.sortOrder,
-        page: s.page,
-        pageSize: s.pageSize,
-    }));
+    const filters = useFilterStore(
+        useShallow((s) => ({
+            month: s.selectedMonth,
+            categoryId: s.activeCategoryId ?? undefined,
+            searchText: s.searchText || undefined,
+            sortField: s.sortField,
+            sortOrder: s.sortOrder,
+            page: s.page,
+            pageSize: s.pageSize,
+        })),
+    );
 
     return useQuery({
         queryKey: ['transactions', filters],
