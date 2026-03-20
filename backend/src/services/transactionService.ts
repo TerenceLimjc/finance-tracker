@@ -99,11 +99,12 @@ export class TransactionService {
         `).run(categoryId, id);
 
         if (result.changes > 0 && tx) {
-            // Upsert: if same merchant+description already has a rule, update it
+            // Upsert: COALESCE(merchant,'') treats NULL merchant rows as equivalent,
+            // matching the idx_feedback_coalesce_unique index to prevent duplicates.
             db.prepare(`
                 INSERT INTO category_feedback (merchant, description, category_id)
                 VALUES (?, ?, ?)
-                ON CONFLICT(merchant, description)
+                ON CONFLICT(COALESCE(merchant, ''), description)
                 DO UPDATE SET category_id = excluded.category_id,
                               created_at  = datetime('now')
             `).run(tx.merchant ?? null, tx.description, categoryId);
