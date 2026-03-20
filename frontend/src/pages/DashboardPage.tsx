@@ -4,8 +4,9 @@ import { ProcessingBanner } from '@/components/common/ProcessingBanner/Processin
 import { EmptyDashboard } from '@/components/common/EmptyDashboard/EmptyDashboard';
 import { MonthSelector } from '@/components/transactions/MonthSelector/MonthSelector';
 import { CategoryPieChart } from '@/components/analytics/CategoryPieChart/CategoryPieChart';
+import { SpenderPieChart } from '@/components/analytics/SpenderPieChart/SpenderPieChart';
 import { TransactionTable } from '@/components/transactions/TransactionTable/TransactionTable';
-import { useMonthlySummary, useTransactions } from '@/hooks/useTransactions';
+import { useMonthlySummary, useCategoryBreakdown, useSpenderBreakdown, useTransactions } from '@/hooks/useTransactions';
 import { useFilterStore } from '@/store/filterStore';
 
 const { Title } = Typography;
@@ -13,11 +14,24 @@ const { Title } = Typography;
 export function DashboardPage() {
     const { data: summary } = useMonthlySummary();
     const { data: txPage, isFetching: txFetching } = useTransactions();
+
+    const activeCategoryId = useFilterStore((s) => s.activeCategoryId);
+    const activeSpender = useFilterStore((s) => s.activeSpender);
     const setSearchText = useFilterStore((s) => s.setSearchText);
     const searchText = useFilterStore((s) => s.searchText);
 
-    // Only show empty state when we have a confirmed response with zero results,
-    // not while a refetch is in flight (which would flash the empty screen)
+    // Cross-filter: category chart scoped to active spender; spender chart scoped to active category
+    const { data: categoryFiltered } = useCategoryBreakdown(activeSpender);
+    const { data: spenderFiltered } = useSpenderBreakdown(activeCategoryId);
+
+    const categoryChartData = (activeSpender !== null ? categoryFiltered?.categories : summary?.categories) ?? [];
+    const spenderChartData = (activeCategoryId !== null ? spenderFiltered?.spenders : summary?.spenders) ?? [];
+
+    // Derive contextual titles
+    const activeCategoryName = summary?.categories.find((c) => c.categoryId === activeCategoryId)?.categoryName;
+    const categoryChartTitle = activeSpender ? `Spending by Category · ${activeSpender}` : 'Spending by Category';
+    const spenderChartTitle = activeCategoryName ? `Spending by Spender · ${activeCategoryName}` : 'Spending by Spender';
+
     const isEmpty = !txFetching && (!txPage || txPage.total === 0);
     const changePositive = (summary?.changeAmount ?? 0) >= 0;
 
@@ -81,11 +95,24 @@ export function DashboardPage() {
                 <EmptyDashboard />
             ) : (
                 <>
-                    {/* Pie chart */}
-                    {summary && summary.categories.length > 0 && (
-                        <Card title="Spending by Category">
-                            <CategoryPieChart data={summary.categories} isLoading={txFetching} />
-                        </Card>
+                    {/* Charts row: category + spender side by side */}
+                    {summary && (categoryChartData.length > 0 || spenderChartData.length > 0) && (
+                        <Row gutter={16} style={{ alignItems: 'stretch' }}>
+                            {(summary.categories.length > 0 || categoryChartData.length > 0) && (
+                                <Col span={spenderChartData.length > 0 || summary.spenders.length > 0 ? 12 : 24} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Card title={categoryChartTitle} style={{ flex: 1 }}>
+                                        <CategoryPieChart data={categoryChartData} isLoading={txFetching} />
+                                    </Card>
+                                </Col>
+                            )}
+                            {(summary.spenders.length > 0 || spenderChartData.length > 0) && (
+                                <Col span={summary.categories.length > 0 || categoryChartData.length > 0 ? 12 : 24} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Card title={spenderChartTitle} style={{ flex: 1 }}>
+                                        <SpenderPieChart data={spenderChartData} isLoading={txFetching} />
+                                    </Card>
+                                </Col>
+                            )}
+                        </Row>
                     )}
 
                     {/* Transaction table */}

@@ -17,6 +17,8 @@ export function TransactionTable() {
 
     const activeCategoryId = useFilterStore((s) => s.activeCategoryId);
     const setActiveCategory = useFilterStore((s) => s.setActiveCategory);
+    const activeSpender = useFilterStore((s) => s.activeSpender);
+    const setActiveSpender = useFilterStore((s) => s.setActiveSpender);
     const page = useFilterStore((s) => s.page);
     const pageSize = useFilterStore((s) => s.pageSize);
     const setPage = useFilterStore((s) => s.setPage);
@@ -126,6 +128,15 @@ export function TransactionTable() {
                         color="blue"
                     >
                         {categories.find((c) => c.id === activeCategoryId)?.name ?? 'Category'}
+                    </Tag>
+                )}
+                {activeSpender !== null && (
+                    <Tag
+                        closable
+                        onClose={() => setActiveSpender(null)}
+                        color="purple"
+                    >
+                        {activeSpender}
                     </Tag>
                 )}
             </Space>

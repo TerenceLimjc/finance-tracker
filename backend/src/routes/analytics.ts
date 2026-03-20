@@ -10,7 +10,7 @@ const svc = new TransactionService();
  */
 export async function analyticsRoutes(fastify: FastifyInstance) {
     fastify.get<{
-        Querystring: { month?: string };
+        Querystring: { month?: string; categoryId?: string; spender?: string };
     }>('/spending', async (req, reply) => {
         const now = new Date();
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -20,7 +20,11 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
             return reply.status(400).send({ error: 'month must be YYYY-MM' });
         }
 
-        const summary = svc.getMonthlySummary(month);
+        const opts: { categoryId?: number; spender?: string } = {};
+        if (req.query.categoryId) opts.categoryId = Number(req.query.categoryId);
+        if (req.query.spender) opts.spender = req.query.spender;
+
+        const summary = svc.getMonthlySummary(month, opts);
         return reply.send(summary);
     });
 }

@@ -28,6 +28,7 @@ const transactionsHandler = http.get('/api/transactions', async ({ request }) =>
     const url = new URL(request.url);
     const month = url.searchParams.get('month') ?? '2026-03';
     const categoryId = url.searchParams.get('categoryId');
+    const spender = url.searchParams.get('spender');
     const searchText = (url.searchParams.get('searchText') ?? '').toLowerCase();
     const sortField = (url.searchParams.get('sortField') ?? 'transactionDate') as 'transactionDate' | 'amount';
     const sortOrder = url.searchParams.get('sortOrder') ?? 'desc';
@@ -38,6 +39,9 @@ const transactionsHandler = http.get('/api/transactions', async ({ request }) =>
     let filtered = transactions.filter((t) => t.transactionDate.startsWith(month));
     if (categoryId) {
         filtered = filtered.filter((t) => t.categoryId === parseInt(categoryId, 10));
+    }
+    if (spender) {
+        filtered = filtered.filter((t) => t.cardholderName === spender);
     }
     if (searchText) {
         filtered = filtered.filter(
@@ -87,34 +91,66 @@ const spendingHandler = http.get('/api/analytics/spending', async ({ request }) 
     await delay(220);
     const url = new URL(request.url);
     const month = url.searchParams.get('month') ?? '2026-03';
+    const filterCategoryId = url.searchParams.get('categoryId')
+        ? parseInt(url.searchParams.get('categoryId')!, 10)
+        : null;
+    const filterSpender = url.searchParams.get('spender') ?? null;
 
     if (month === '2026-03') {
-        // Recompute totals from in-memory transactions so category edits reflect in chart
-        const monthTxs = transactions.filter((t) => t.transactionDate.startsWith('2026-03'));
-        const totalSpend = monthTxs.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const allMonthTxs = transactions.filter((t) => t.transactionDate.startsWith('2026-03'));
 
+        // Stats always reflect full month
+        const totalSpend = allMonthTxs.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+        // Category chart: scoped to filterSpender if set
+        const catTxs = filterSpender
+            ? allMonthTxs.filter((t) => t.cardholderName === filterSpender)
+            : allMonthTxs;
+        const catBase = catTxs.reduce((sum, t) => sum + Math.abs(t.amount), 0);
         const categoryMap = new Map<number, { name: string; total: number; count: number }>();
-        for (const t of monthTxs) {
+        for (const t of catTxs) {
             if (!t.categoryId || !t.categoryName) continue;
             const entry = categoryMap.get(t.categoryId) ?? { name: t.categoryName, total: 0, count: 0 };
             entry.total += Math.abs(t.amount);
             entry.count += 1;
             categoryMap.set(t.categoryId, entry);
         }
-
         const categories = Array.from(categoryMap.entries()).map(([id, val]) => ({
             categoryId: id,
             categoryName: val.name,
             total: parseFloat(val.total.toFixed(2)),
-            percentage: parseFloat(((val.total / totalSpend) * 100).toFixed(1)),
+            percentage: parseFloat(((val.total / catBase) * 100).toFixed(1)),
             transactionCount: val.count,
         }));
+
+        // Spender chart: scoped to filterCategoryId if set
+        const spTxs = filterCategoryId !== null
+            ? allMonthTxs.filter((t) => t.categoryId === filterCategoryId)
+            : allMonthTxs;
+        const spBase = spTxs.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const spenderMap = new Map<string, { total: number; count: number }>();
+        for (const t of spTxs) {
+            if (!t.cardholderName) continue;
+            const entry = spenderMap.get(t.cardholderName) ?? { total: 0, count: 0 };
+            entry.total += Math.abs(t.amount);
+            entry.count += 1;
+            spenderMap.set(t.cardholderName, entry);
+        }
+        const spenders = Array.from(spenderMap.entries())
+            .sort((a, b) => b[1].total - a[1].total)
+            .map(([name, val]) => ({
+                spenderName: name,
+                total: parseFloat(val.total.toFixed(2)),
+                percentage: parseFloat(((val.total / spBase) * 100).toFixed(1)),
+                transactionCount: val.count,
+            }));
 
         return HttpResponse.json<MonthlySummary>({
             ...MOCK_SUMMARY_MARCH,
             totalSpend: parseFloat(totalSpend.toFixed(2)),
-            transactionCount: monthTxs.length,
+            transactionCount: allMonthTxs.length,
             categories,
+            spenders,
         });
     }
 
@@ -126,6 +162,7 @@ const spendingHandler = http.get('/api/analytics/spending', async ({ request }) 
         changeAmount: 0,
         changePercent: 0,
         categories: [],
+        spenders: [],
     });
 });
 

@@ -4,6 +4,7 @@ export interface TransactionQuery {
     month: string;           // YYYY-MM
     categoryId?: number;
     searchText?: string;
+    spender?: string;
     sortField?: 'transactionDate' | 'amount';
     sortOrder?: 'asc' | 'desc';
     page?: number;
@@ -21,6 +22,7 @@ export class TransactionService {
             month,
             categoryId,
             searchText,
+            spender,
             sortField = 'transactionDate',
             sortOrder = 'desc',
             page = 1,
@@ -46,6 +48,11 @@ export class TransactionService {
             conditions.push('(t.description LIKE ? OR t.merchant LIKE ?)');
             const like = `%${searchText}%`;
             params.push(like, like);
+        }
+
+        if (spender) {
+            conditions.push('t.account_info = ?');
+            params.push(spender);
         }
 
         const where = conditions.join(' AND ');
@@ -138,8 +145,12 @@ export class TransactionService {
 
     /**
      * Monthly spending summary + category breakdown for the analytics route.
+     *
+     * opts.spender   — when set, the categories breakdown is scoped to that person's transactions
+     * opts.categoryId — when set, the spenders breakdown is scoped to that category's transactions
+     * The summary stats (totalSpend, transactionCount, change) always reflect the full month.
      */
-    getMonthlySummary(month: string) {
+    getMonthlySummary(month: string, opts?: { categoryId?: number; spender?: string }) {
         const db = getDb();
 
         const monthPattern = `${month}-%`;
@@ -167,6 +178,23 @@ export class TransactionService {
         const totalSpend = totalsRow.totalSpend ?? 0;
         const priorSpend = priorRow.totalSpend ?? 0;
 
+        // ── Categories breakdown — optionally scoped to a single spender ──────
+        const catConditions: string[] = ['t.transaction_date LIKE ?', 't.category_id IS NOT NULL'];
+        const catParams: (string | number)[] = [monthPattern];
+        if (opts?.spender) {
+            catConditions.push('t.account_info = ?');
+            catParams.push(opts.spender);
+        }
+        const catWhere = catConditions.join(' AND ');
+
+        // Base for percentages = filtered subset total
+        const catTotalRow = db.prepare(`
+            SELECT SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END) AS total
+            FROM transactions t
+            WHERE ${catWhere}
+        `).get(...catParams) as { total: number | null };
+        const catBase = catTotalRow.total ?? 0;
+
         const categories = db.prepare(`
             SELECT
                 t.category_id  AS categoryId,
@@ -175,16 +203,49 @@ export class TransactionService {
                 COUNT(*)           AS transactionCount
             FROM transactions t
             JOIN categories c ON c.id = t.category_id
-            WHERE t.transaction_date LIKE ?
-              AND t.category_id IS NOT NULL
+            WHERE ${catWhere}
             GROUP BY t.category_id
             HAVING SUM(t.amount) < 0
             ORDER BY total DESC
-        `).all(monthPattern) as Array<{ categoryId: number; categoryName: string; total: number; transactionCount: number }>;
+        `).all(...catParams) as Array<{ categoryId: number; categoryName: string; total: number; transactionCount: number }>;
 
         const categoriesWithPct = categories.map((cat) => ({
             ...cat,
-            percentage: totalSpend > 0 ? (cat.total / totalSpend) * 100 : 0,
+            percentage: catBase > 0 ? (cat.total / catBase) * 100 : 0,
+        }));
+
+        // ── Spenders breakdown — optionally scoped to a single category ───────
+        const spConditions: string[] = ['t.transaction_date LIKE ?', 't.account_info IS NOT NULL'];
+        const spParams: (string | number)[] = [monthPattern];
+        if (opts?.categoryId) {
+            spConditions.push('t.category_id = ?');
+            spParams.push(opts.categoryId);
+        }
+        const spWhere = spConditions.join(' AND ');
+
+        // Base for percentages = filtered subset total
+        const spTotalRow = db.prepare(`
+            SELECT SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END) AS total
+            FROM transactions t
+            WHERE ${spWhere}
+        `).get(...spParams) as { total: number | null };
+        const spBase = spTotalRow.total ?? 0;
+
+        const spenders = db.prepare(`
+            SELECT
+                t.account_info     AS spenderName,
+                ABS(SUM(t.amount)) AS total,
+                COUNT(*)           AS transactionCount
+            FROM transactions t
+            WHERE ${spWhere}
+            GROUP BY t.account_info
+            HAVING SUM(t.amount) < 0
+            ORDER BY total DESC
+        `).all(...spParams) as Array<{ spenderName: string; total: number; transactionCount: number }>;
+
+        const spendersWithPct = spenders.map((s) => ({
+            ...s,
+            percentage: spBase > 0 ? (s.total / spBase) * 100 : 0,
         }));
 
         return {
@@ -194,6 +255,7 @@ export class TransactionService {
             changeAmount: totalSpend - priorSpend,
             changePercent: priorSpend > 0 ? ((totalSpend - priorSpend) / priorSpend) * 100 : 0,
             categories: categoriesWithPct,
+            spenders: spendersWithPct,
         };
     }
 

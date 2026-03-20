@@ -13,6 +13,7 @@ export function useTransactions() {
         useShallow((s) => ({
             month: s.selectedMonth,
             categoryId: s.activeCategoryId ?? undefined,
+            spender: s.activeSpender ?? undefined,
             searchText: s.searchText || undefined,
             sortField: s.sortField,
             sortOrder: s.sortOrder,
@@ -36,6 +37,34 @@ export function useMonthlySummary() {
     return useQuery({
         queryKey: ['monthlySummary', month],
         queryFn: () => transactionService.getMonthlySummary(month),
+    });
+}
+
+/**
+ * Category breakdown scoped to a specific spender.
+ * Only fires when spender is non-null. Used to cross-filter the Category chart.
+ */
+export function useCategoryBreakdown(spender: string | null) {
+    const month = useFilterStore((s) => s.selectedMonth);
+
+    return useQuery({
+        queryKey: ['monthlySummary', month, { spender }],
+        queryFn: () => transactionService.getMonthlySummary(month, { spender: spender! }),
+        enabled: spender !== null,
+    });
+}
+
+/**
+ * Spender breakdown scoped to a specific category.
+ * Only fires when categoryId is non-null. Used to cross-filter the Spender chart.
+ */
+export function useSpenderBreakdown(categoryId: number | null) {
+    const month = useFilterStore((s) => s.selectedMonth);
+
+    return useQuery({
+        queryKey: ['monthlySummary', month, { categoryId }],
+        queryFn: () => transactionService.getMonthlySummary(month, { categoryId: categoryId! }),
+        enabled: categoryId !== null,
     });
 }
 

@@ -17,6 +17,7 @@ export async function transactionRoutes(fastify: FastifyInstance) {
             month?: string;
             categoryId?: string;
             searchText?: string;
+            spender?: string;
             sortField?: string;
             sortOrder?: string;
             page?: string;
@@ -30,6 +31,7 @@ export async function transactionRoutes(fastify: FastifyInstance) {
             month = currentMonth,
             categoryId,
             searchText,
+            spender,
             sortField,
             sortOrder,
             page,
@@ -40,6 +42,7 @@ export async function transactionRoutes(fastify: FastifyInstance) {
             month,
             categoryId: categoryId !== undefined ? Number(categoryId) : undefined,
             searchText,
+            spender,
             sortField: (sortField as 'transactionDate' | 'amount') ?? 'transactionDate',
             sortOrder: (sortOrder as 'asc' | 'desc') ?? 'desc',
             page: page !== undefined ? Number(page) : 1,

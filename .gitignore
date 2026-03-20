@@ -40,5 +40,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# ─── Tesseract OCR data ───────────────────────────────────────────────────────
+# Download via: brew install tesseract tesseract-lang  (macOS)
+#               apt install tesseract-ocr tesseract-ocr-eng  (Debian/Ubuntu)
+# Then copy or symlink eng.traineddata into backend/
+*.traineddata
+
 # ─── Misc ─────────────────────────────────────────────────────────────────────
 *.tsbuildinfo

@@ -28,6 +28,7 @@ export interface Transaction {
 export interface TransactionFilters {
     month: string;        // Format: YYYY-MM
     categoryId?: number;
+    spender?: string;
     searchText?: string;
     sortField?: 'transactionDate' | 'amount';
     sortOrder?: 'asc' | 'desc';
@@ -50,6 +51,13 @@ export interface CategorySpending {
     transactionCount: number;
 }
 
+export interface SpenderSpending {
+    spenderName: string;
+    total: number;
+    percentage: number;
+    transactionCount: number;
+}
+
 export interface MonthlySummary {
     month: string;
     totalSpend: number;
@@ -57,4 +65,5 @@ export interface MonthlySummary {
     changeAmount: number;    // vs prior month
     changePercent: number;
     categories: CategorySpending[];
+    spenders: SpenderSpending[];
 }

@@ -31,8 +31,8 @@ export const transactionService = {
     /**
      * Fetch the monthly summary (totals, category breakdown, MoM change).
      */
-    async getMonthlySummary(month: string): Promise<MonthlySummary> {
-        const { data } = await apiClient.get('/analytics/spending', { params: { month } });
+    async getMonthlySummary(month: string, opts?: { categoryId?: number; spender?: string }): Promise<MonthlySummary> {
+        const { data } = await apiClient.get('/analytics/spending', { params: { month, ...opts } });
         return data;
     },
 };

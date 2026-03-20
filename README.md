@@ -6,7 +6,25 @@ A local web application for reviewing personal bank statements, categorising tra
 
 ## Quick Start
 
-**Prerequisites:** Node.js 20+, npm 10+
+**Prerequisites:** Node.js 20+, npm 10+, [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) with English language data
+
+```bash
+# macOS
+brew install tesseract tesseract-lang
+
+# Debian/Ubuntu
+sudo apt install tesseract-ocr tesseract-ocr-eng
+```
+
+After installing Tesseract, copy or symlink the trained data file into the backend directory:
+
+```bash
+# macOS (Homebrew)
+ln -sf $(brew --prefix)/share/tessdata/eng.traineddata backend/eng.traineddata
+
+# Linux
+ln -sf /usr/share/tesseract-ocr/5/tessdata/eng.traineddata backend/eng.traineddata
+```
 
 ```bash
 # 1. First-time setup — checks Node version, installs deps, creates runtime dirs
