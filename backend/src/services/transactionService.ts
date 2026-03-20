@@ -81,16 +81,58 @@ export class TransactionService {
 
     /**
      * Reassigns the category of a single transaction (user-driven edit).
-     * Sets confidence to 1.0 (manual = certain).
+     * Sets confidence to 1.0 (manual = certain) and records the correction
+     * in category_feedback so future uploads learn from it.
      */
     updateCategory(id: number, categoryId: number): boolean {
         const db = getDb();
+
+        // Fetch the transaction so we can record the feedback rule
+        const tx = db.prepare(
+            'SELECT description, merchant FROM transactions WHERE id = ?'
+        ).get(id) as { description: string; merchant: string | null } | undefined;
+
         const result = db.prepare(`
             UPDATE transactions
             SET category_id = ?, category_confidence = 1.0
             WHERE id = ?
         `).run(categoryId, id);
+
+        if (result.changes > 0 && tx) {
+            // Upsert: if same merchant+description already has a rule, update it
+            db.prepare(`
+                INSERT INTO category_feedback (merchant, description, category_id)
+                VALUES (?, ?, ?)
+                ON CONFLICT(merchant, description)
+                DO UPDATE SET category_id = excluded.category_id,
+                              created_at  = datetime('now')
+            `).run(tx.merchant ?? null, tx.description, categoryId);
+        }
+
         return result.changes > 0;
+    }
+
+    /**
+     * Permanently deletes a single transaction.
+     */
+    delete(id: number): boolean {
+        const db = getDb();
+        const result = db.prepare('DELETE FROM transactions WHERE id = ?').run(id);
+        return result.changes > 0;
+    }
+
+    /**
+     * Returns all learned feedback rules (most-recent-first).
+     * Used by AiService to apply as Tier 0 before regex/LLM.
+     */
+    getFeedback(): Array<{ merchant: string | null; description: string; categoryId: number; categoryName: string }> {
+        const db = getDb();
+        return db.prepare(`
+            SELECT f.merchant, f.description, f.category_id AS categoryId, c.name AS categoryName
+            FROM category_feedback f
+            JOIN categories c ON c.id = f.category_id
+            ORDER BY f.created_at DESC
+        `).all() as Array<{ merchant: string | null; description: string; categoryId: number; categoryName: string }>;
     }
 
     /**

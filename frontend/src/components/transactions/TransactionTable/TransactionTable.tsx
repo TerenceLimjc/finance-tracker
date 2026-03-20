@@ -1,7 +1,7 @@
-import { Table, Select, Tag, Space, Typography } from 'antd';
+import { Table, Select, Tag, Space, Typography, Popconfirm, Button } from 'antd';
 import type { TableProps } from 'antd';
 import type { Transaction } from '@/types/transaction';
-import { useTransactions, useUpdateCategory } from '@/hooks/useTransactions';
+import { useTransactions, useUpdateCategory, useDeleteTransaction } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { useFilterStore } from '@/store/filterStore';
 import { formatDate, formatAmount } from '@/utils/formatters';
@@ -13,6 +13,7 @@ export function TransactionTable() {
     const { data, isLoading, isFetching } = useTransactions();
     const { data: categories = [] } = useCategories();
     const { mutate: updateCategory } = useUpdateCategory();
+    const { mutate: deleteTransaction } = useDeleteTransaction();
 
     const activeCategoryId = useFilterStore((s) => s.activeCategoryId);
     const setActiveCategory = useFilterStore((s) => s.setActiveCategory);
@@ -93,6 +94,22 @@ export function TransactionTable() {
                 >
                     {formatAmount(val)}
                 </Text>
+            ),
+        },
+        {
+            title: '',
+            key: 'actions',
+            width: 40,
+            render: (_: unknown, record: Transaction) => (
+                <Popconfirm
+                    title="Delete this transaction?"
+                    onConfirm={() => deleteTransaction(record.id)}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Cancel"
+                >
+                    <Button type="text" size="small" danger icon={<span style={{ fontSize: 12 }}>✕</span>} />
+                </Popconfirm>
             ),
         },
     ];

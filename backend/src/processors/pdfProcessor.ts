@@ -88,6 +88,7 @@ const HSBC_SKIP_PATTERNS = [
     /POST\s+DATE\s+TRAN\s+DATE/i,
     /^(AMOUNT|DESCRIPTION|SGD)\s*$/i,
     /^\s*Page\s+\d+/i,
+    /PAYMENT\s+-?THANK\s+YOU/i,   // credit card payment line — not a purchase
 ];
 
 // Handles both "DD Mon" (with space) and "DDMon" (OCR artefact, no space) dates.

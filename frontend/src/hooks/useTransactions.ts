@@ -55,3 +55,18 @@ export function useUpdateCategory() {
         },
     });
 }
+
+/**
+ * Mutation to delete a single transaction.
+ */
+export function useDeleteTransaction() {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: (transactionId: number) => transactionService.deleteTransaction(transactionId),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['transactions'] });
+            qc.invalidateQueries({ queryKey: ['monthlySummary'] });
+        },
+    });
+}

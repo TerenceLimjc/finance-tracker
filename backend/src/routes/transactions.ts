@@ -6,8 +6,9 @@ const svc = new TransactionService();
 /**
  * Transaction routes
  *
- * GET /api/transactions      — paginated, filtered list
- * PUT /api/transactions/:id  — update category (inline edit)
+ * GET    /api/transactions      — paginated, filtered list
+ * PUT    /api/transactions/:id  — update category (inline edit)
+ * DELETE /api/transactions/:id  — delete a single transaction
  */
 export async function transactionRoutes(fastify: FastifyInstance) {
     // GET /api/transactions
@@ -65,6 +66,19 @@ export async function transactionRoutes(fastify: FastifyInstance) {
 
         const updated = svc.updateCategory(id, categoryId);
         if (!updated) {
+            return reply.status(404).send({ error: 'Transaction not found' });
+        }
+        return reply.status(204).send();
+    });
+
+    // DELETE /api/transactions/:id
+    fastify.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id <= 0) {
+            return reply.status(400).send({ error: 'Invalid transaction id' });
+        }
+        const deleted = svc.delete(id);
+        if (!deleted) {
             return reply.status(404).send({ error: 'Transaction not found' });
         }
         return reply.status(204).send();

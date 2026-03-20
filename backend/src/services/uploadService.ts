@@ -119,7 +119,8 @@ export class UploadService {
 
             // 2. AI categorisation
             const categories = db.prepare('SELECT id, name FROM categories').all() as Array<{ id: number; name: string }>;
-            const categorised = await aiService.categorise(parsed, categories);
+            const feedback = txService.getFeedback();
+            const categorised = await aiService.categorise(parsed, categories, feedback);
 
             // 3. Batch insert transactions
             txService.insertBatch(uploadId, categorised);

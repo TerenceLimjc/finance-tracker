@@ -22,6 +22,13 @@ export const transactionService = {
     },
 
     /**
+     * Delete a single transaction.
+     */
+    async deleteTransaction(transactionId: number): Promise<void> {
+        await apiClient.delete(`/transactions/${transactionId}`);
+    },
+
+    /**
      * Fetch the monthly summary (totals, category breakdown, MoM change).
      */
     async getMonthlySummary(month: string): Promise<MonthlySummary> {

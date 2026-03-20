@@ -5,6 +5,13 @@ export interface CategorisedTransaction extends ParsedTransaction {
     categoryConfidence: number | undefined;
 }
 
+export interface FeedbackRule {
+    merchant: string | null;
+    description: string;
+    categoryId: number;
+    categoryName: string;
+}
+
 // ─── Tier 1: Keyword / Rule Matching ─────────────────────────────────────────
 
 const KEYWORD_RULES: Array<{ pattern: RegExp; categoryName: string }> = [
@@ -25,6 +32,7 @@ const HSBC_KEYWORD_SEEDS: Array<{ pattern: RegExp; categoryName: string }> = [
     { pattern: /^PARKING\.SG/i, categoryName: 'Transport' },
     { pattern: /^MCDONALD/i, categoryName: 'Food & Dining' },
     { pattern: /^PRATUNAM/i, categoryName: 'Food & Dining' },
+    { pattern: /^HAWKER/i, categoryName: 'Food & Dining' },
     { pattern: /^GRAB/i, categoryName: 'Transport' },
     { pattern: /^SHEIN/i, categoryName: 'Shopping' },
     { pattern: /^NETFLIX/i, categoryName: 'Entertainment' },
@@ -75,67 +83,148 @@ function resolveCategoryId(
     return categories.find((c) => c.name.toLowerCase() === lower)?.id;
 }
 
-// ─── Tier 2: OpenAI Batched Categorisation ───────────────────────────────────
+// ─── Tier 2: LLM Batched Categorisation ─────────────────────────────────────
+// Supports local LLMs (Ollama, LM Studio, llama.cpp) and OpenAI via the same
+// openai npm package — local servers expose an OpenAI-compatible /v1 endpoint.
+//
+// Precedence:
+//   LOCAL_LLM_BASE_URL set  → use local LLM (Ollama / LM Studio / llama.cpp)
+//   OPENAI_API_KEY set      → use OpenAI
+//   Neither set             → skip Tier 2
+//
+// Recommended local models (via Ollama):
+//   qwen2.5:3b   — default; fast, excellent JSON, low memory (~2GB)
+//   qwen2.5:1.5b — minimal resource use (~1GB), sufficient for short descriptions
+//   phi3.5:latest — balanced quality/speed (~2.2GB)
+//   llama3.2:3b  — good general purpose (~2GB)
 
-const OPENAI_BATCH_SIZE = 50;
+const LLM_BATCH_SIZE = 50;
+const LOCAL_LLM_BATCH_SIZE = 20; // Smaller batches improve JSON reliability for local models
 
-interface OpenAIResultItem {
+interface LLMResultItem {
     id: number;
     category: string;
     confidence: number;
 }
 
-async function categoriseWithOpenAI(
+/**
+ * Robustly extract a results array from raw LLM output.
+ * Handles: plain arrays, object wrappers ({ results/items/... }), markdown fences.
+ */
+function extractLLMArray(raw: string): LLMResultItem[] {
+    // Strip markdown code fences (``` or ```json)
+    const stripped = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/, '')
+        .trim();
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(stripped);
+    } catch {
+        // Fallback: find the first JSON array embedded in the string
+        const match = stripped.match(/\[[\s\S]*\]/);
+        if (!match) return [];
+        try {
+            parsed = JSON.parse(match[0]);
+        } catch {
+            return [];
+        }
+    }
+
+    if (Array.isArray(parsed)) return parsed as LLMResultItem[];
+
+    if (parsed !== null && typeof parsed === 'object') {
+        // Accept any wrapper object: { "results": [...] }, { "items": [...] }, etc.
+        const arr = Object.values(parsed as Record<string, unknown>).find(Array.isArray);
+        if (arr) return arr as LLMResultItem[];
+    }
+
+    return [];
+}
+
+/**
+ * Match a transaction against feedback rules.
+ * Merchant takes priority (more specific); falls back to description.
+ */
+function matchFeedback(
+    merchant: string | undefined,
+    description: string,
+    feedback: FeedbackRule[],
+): FeedbackRule | undefined {
+    if (merchant) {
+        const byMerchant = feedback.find(
+            (f) => f.merchant !== null && f.merchant.toLowerCase() === merchant.toLowerCase(),
+        );
+        if (byMerchant) return byMerchant;
+    }
+    return feedback.find((f) => f.description.toLowerCase() === description.toLowerCase());
+}
+
+async function categoriseWithLLM(
     items: Array<{ id: number; description: string; merchant?: string }>,
     categoryNames: string[],
+    feedbackExamples: FeedbackRule[],
 ): Promise<Map<number, { categoryName: string; confidence: number }>> {
     const results = new Map<number, { categoryName: string; confidence: number }>();
 
-    if (!process.env.OPENAI_API_KEY) return results;
+    const localBaseUrl = process.env.LOCAL_LLM_BASE_URL;
+    const isLocal = Boolean(localBaseUrl);
 
-    // Lazy import to avoid errors when key is not set
+    // Lazy import — avoids load-time errors when neither key is configured
     const { default: OpenAI } = await import('openai');
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
 
-    for (let i = 0; i < items.length; i += OPENAI_BATCH_SIZE) {
-        const batch = items.slice(i, i + OPENAI_BATCH_SIZE);
-        const prompt = `Classify each bank transaction into exactly one category.
-Categories: ${categoryNames.join(', ')}
+    const client = isLocal
+        ? new OpenAI({
+            baseURL: localBaseUrl,
+            apiKey: process.env.LOCAL_LLM_API_KEY ?? 'local', // local servers don't validate this
+        })
+        : new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-Transactions (JSON array):
-${JSON.stringify(batch.map((t) => ({ id: t.id, description: t.description, merchant: t.merchant })))}
+    const model = isLocal
+        ? (process.env.LOCAL_LLM_MODEL ?? 'qwen2.5:3b')
+        : (process.env.OPENAI_MODEL ?? 'gpt-4o-mini');
 
-Respond with a JSON array: [{ "id": number, "category": string, "confidence": number }]`;
+    const batchSize = isLocal ? LOCAL_LLM_BATCH_SIZE : LLM_BATCH_SIZE;
+
+    for (let i = 0; i < items.length; i += batchSize) {
+        const batch = items.slice(i, i + batchSize);
+        const examplesBlock = feedbackExamples.length > 0
+            ? `\nExamples from previous corrections (use as guidance):\n` +
+            feedbackExamples.slice(0, 20).map(
+                (e) => `  - "${e.merchant ?? e.description}" → ${e.categoryName}`,
+            ).join('\n') + '\n'
+            : '';
+
+        const userContent =
+            `Classify each bank transaction into exactly one of these categories: ${categoryNames.join(', ')}\n` +
+            examplesBlock +
+            `\nTransactions:\n${JSON.stringify(batch.map((t) => ({ id: t.id, description: t.description, merchant: t.merchant })))}\n\n` +
+            `Respond with a JSON object: {"results": [{"id": <number>, "category": <string>, "confidence": <number>}]}`;
 
         try {
             const response = await client.chat.completions.create({
                 model,
-                messages: [{ role: 'user', content: prompt }],
+                messages: [
+                    { role: 'system', content: 'You are a financial transaction classifier. Always respond with valid JSON only.' },
+                    { role: 'user', content: userContent },
+                ],
                 response_format: { type: 'json_object' },
             });
 
             const raw = response.choices[0]?.message?.content ?? '{}';
-            const parsed: unknown = JSON.parse(raw);
+            const arr = extractLLMArray(raw);
 
-            // Accept both { items: [...] } wrapper and plain array
-            const arr: unknown = Array.isArray(parsed)
-                ? parsed
-                : (parsed as Record<string, unknown>).items ??
-                Object.values(parsed as Record<string, unknown>).find(Array.isArray);
-
-            if (Array.isArray(arr)) {
-                for (const item of arr as OpenAIResultItem[]) {
-                    if (typeof item.id === 'number' && typeof item.category === 'string') {
-                        results.set(item.id, {
-                            categoryName: item.category,
-                            confidence: typeof item.confidence === 'number' ? item.confidence : 0.85,
-                        });
-                    }
+            for (const item of arr) {
+                if (typeof item.id === 'number' && typeof item.category === 'string') {
+                    results.set(item.id, {
+                        categoryName: item.category,
+                        confidence: typeof item.confidence === 'number' ? item.confidence : 0.75,
+                    });
                 }
             }
         } catch {
-            // OpenAI call failed — leave this batch uncategorised
+            // LLM call failed for this batch — leave uncategorised
         }
     }
 
@@ -149,25 +238,27 @@ Respond with a JSON array: [{ "id": number, "category": string, "confidence": nu
  *
  * Three-tier categorisation:
  *   1. Keyword / rule matching (always runs)
- *   2. OpenAI batched categorisation (runs when Tier 1 confidence < 0.7 and API key present)
+ *   2. LLM batched categorisation (local via LOCAL_LLM_BASE_URL, or OpenAI via OPENAI_API_KEY)
  *   3. Embedding similarity (future — stub only, activated by ENABLE_EMBEDDINGS=true)
  */
 export class AiService {
     async categorise(
         transactions: ParsedTransaction[],
         categories: Array<{ id: number; name: string }>,
+        feedback: FeedbackRule[] = [],
     ): Promise<CategorisedTransaction[]> {
-        // Assign a temporary numeric index so we can correlate OpenAI responses
+        // Assign a temporary numeric index so we can correlate LLM responses
         const indexed = transactions.map((t, idx) => ({ t, idx }));
 
-        // ── Tier 1 ────────────────────────────────────────────────────────────
         const results: CategorisedTransaction[] = indexed.map(({ t }) => ({
             ...t,
             categoryId: undefined,
             categoryConfidence: undefined,
         }));
 
-        const lowConfidenceItems: Array<{ id: number; description: string; merchant?: string }> = [];
+        // ── Tier 0: Keyword / rule matching ───────────────────────────────────
+        // Runs first — fast, deterministic regex rules.
+        const tier0Unmatched: Array<{ t: ParsedTransaction; idx: number }> = [];
 
         for (const { t, idx } of indexed) {
             const searchText = [t.merchant, t.description].filter(Boolean).join(' ');
@@ -177,17 +268,37 @@ export class AiService {
                 results[idx].categoryId = resolveCategoryId(categoryName, categories);
                 results[idx].categoryConfidence = confidence;
             } else {
-                // Queue for Tier 2
-                lowConfidenceItems.push({ id: idx, description: t.description, merchant: t.merchant });
+                tier0Unmatched.push({ t, idx });
             }
         }
 
-        // ── Tier 2 ────────────────────────────────────────────────────────────
-        if (lowConfidenceItems.length > 0 && process.env.OPENAI_API_KEY) {
-            const categoryNames = categories.map((c) => c.name);
-            const openAIResults = await categoriseWithOpenAI(lowConfidenceItems, categoryNames);
+        // ── Tier 1: Learned rules (user corrections) ─────────────────────────
+        // Runs second on Tier 0 misses — exact merchant or description match (confidence 1.0).
+        const lowConfidenceItems: Array<{ id: number; description: string; merchant?: string }> = [];
 
-            for (const [idx, { categoryName, confidence }] of openAIResults) {
+        for (const { t, idx } of tier0Unmatched) {
+            if (feedback.length > 0) {
+                const rule = matchFeedback(t.merchant, t.description, feedback);
+                if (rule) {
+                    results[idx].categoryId = rule.categoryId;
+                    results[idx].categoryConfidence = 1.0;
+                    continue;
+                }
+            }
+            // Queue for Tier 2
+            lowConfidenceItems.push({ id: idx, description: t.description, merchant: t.merchant });
+        }
+
+        // ── Tier 2 ────────────────────────────────────────────────────────────
+        const tier2Enabled =
+            lowConfidenceItems.length > 0 &&
+            Boolean(process.env.LOCAL_LLM_BASE_URL || process.env.OPENAI_API_KEY);
+
+        if (tier2Enabled) {
+            const categoryNames = categories.map((c) => c.name);
+            const llmResults = await categoriseWithLLM(lowConfidenceItems, categoryNames, feedback);
+
+            for (const [idx, { categoryName, confidence }] of llmResults) {
                 results[idx].categoryId = resolveCategoryId(categoryName, categories);
                 results[idx].categoryConfidence = confidence;
             }
